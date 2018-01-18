@@ -29,7 +29,7 @@ public class Absence {
 	private LocalDate dateFin;
 	private String motif;
 	private String type;
-	private String statut;
+	private Statut statut;
 	
 	@ManyToOne
 	private Collaborateur collaborateur;
@@ -109,16 +109,16 @@ public class Absence {
 	}
 
 	/**
-	 * @return the status
+	 * @return the statut
 	 */
-	public String getStatut() {
+	public Statut getStatut() {
 		return statut;
 	}
 
 	/**
-	 * @param status the status to set
+	 * @param statut the statut to set
 	 */
-	public void setStatus(String statut) {
+	public void setStatut(Statut statut) {
 		this.statut = statut;
 	}
 

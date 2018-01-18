@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.Collaborateur;
+import dev.gda.api.entite.Statut;
 
 @Service
 public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
@@ -47,12 +48,22 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		Absence a = new Absence();
 		a.setDateDebut(LocalDate.of(2018, 01, 19));
 		a.setDateFin(LocalDate.of(2018, 01, 19));
+		a.setStatut(Statut.INITIALE);
 		a.setCollaborateur(c);
 		em.persist(a);
 		
 		a = new Absence();
+		a.setDateDebut(LocalDate.of(2018, 03, 19));
+		a.setDateFin(LocalDate.of(2018, 03, 19));
+		a.setStatut(Statut.INITIALE);
+		a.setCollaborateur(c);
+		em.persist(a);
+		
+		
+		a = new Absence();
 		a.setDateDebut(LocalDate.of(2018, 01, 28));
 		a.setDateFin(LocalDate.of(2018, 01, 28));
+		a.setStatut(Statut.EN_ATTENTE_VALIDATION);
 		a.setCollaborateur(c);
 		em.persist(a);
 	}
