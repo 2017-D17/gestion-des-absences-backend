@@ -13,7 +13,7 @@ public class DemoApplication {
 	@RequestMapping("/")
     @ResponseBody
     String home() {
-      return "Hello World!";
+      return "GDA - Gestion Des Absences";
     }
 
 	public static void main(String[] args) {
