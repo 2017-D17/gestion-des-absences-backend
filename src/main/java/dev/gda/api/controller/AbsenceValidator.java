@@ -27,12 +27,12 @@ public class AbsenceValidator {
 		
 		isMotifRequired(absence.getMotif(), absence.getType());
 		
-		DateDebutDateFinAreValid(absence.getDateDebut(), absence.getDateFin());
-				
-		
 		if(absence.getCollaborateur() == null || absence.getCollaborateur().getMatricule() == null || absence.getCollaborateur().getMatricule().trim().isEmpty()) {
 			throw new Exception("No Employee has been found");
 		}
+		
+		DateDebutDateFinAreValid(absence.getCollaborateur().getMatricule().trim(), absence.getDateDebut(), absence.getDateFin());
+		
 		
 		this.collaborateurRepository.findByMatricule(absence.getCollaborateur().getMatricule().trim()).orElseThrow(() -> new Exception("No Employee has been found"));
 		
@@ -40,7 +40,7 @@ public class AbsenceValidator {
 		
 	}
 	
-	private boolean DateDebutDateFinAreValid(LocalDate debut, LocalDate fin) throws Exception {
+	private boolean DateDebutDateFinAreValid(String matricule, LocalDate debut, LocalDate fin) throws Exception {
 		
 		if(debut == null || fin == null) {
 			throw new Exception("There is no absence to save");
@@ -58,7 +58,7 @@ public class AbsenceValidator {
 		
 //		* il est interdit de faire une demande qui chevauche une demande existante, sauf si cette dernière est rejetée.
 		// st >= start && df <= fin
-		if(this.absenceRepository.findByDateDebutAndDateFin(debut, fin) == null) {
+		if(this.absenceRepository.findInvalidCreneaux(matricule, debut, fin) == null) {
 			throw new Exception("A demand has been found");
 		}
 		
