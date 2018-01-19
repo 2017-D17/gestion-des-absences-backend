@@ -3,14 +3,14 @@ package dev.gda.api.controller;
 import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.Type;
 import dev.gda.api.repository.AbsenceRepository;
 import dev.gda.api.repository.CollaborateurRepository;
 
-@Component
+@Service
 public class AbsenceValidator {
 	
 	@Autowired

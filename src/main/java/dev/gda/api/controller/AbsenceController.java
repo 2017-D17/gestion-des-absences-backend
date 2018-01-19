@@ -1,6 +1,5 @@
 package dev.gda.api.controller;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.Collaborateur;
 import dev.gda.api.entite.Statut;
-import dev.gda.api.entite.Type;
 import dev.gda.api.repository.AbsenceRepository;
 import dev.gda.api.repository.CollaborateurRepository;
 
@@ -33,6 +31,9 @@ public class AbsenceController {
 	@Autowired
 	private AbsenceRepository absenceRepository;
 
+	@Autowired
+	private AbsenceValidator absenceValidator;
+	
 	@Autowired
 	private CollaborateurRepository collaborateurRepository;
 
@@ -78,8 +79,6 @@ public class AbsenceController {
 	 */
 	@PostMapping
 	public Absence ajouterAbsence(@RequestBody Absence absence) throws Exception {
-
-		AbsenceValidator absenceValidator = new AbsenceValidator();
 
 		if (absenceValidator.isValid(absence)) {
 
