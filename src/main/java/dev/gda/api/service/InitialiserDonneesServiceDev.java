@@ -1,16 +1,26 @@
 package dev.gda.api.service;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.Collaborateur;
 import dev.gda.api.entite.Statut;
+import dev.gda.api.repository.CollaborateurRepository;
 
 @Service
 public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
@@ -18,54 +28,68 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 	@PersistenceContext
 	EntityManager em;
 	
-	public InitialiserDonneesServiceDev(){
-		
+	@Autowired
+	private CollaborateurRepository collaborateurRepository;
+
+	private String server = "https://collab-json-api.herokuapp.com";
+	private RestTemplate rest;
+	private HttpHeaders headers;
+	private HttpStatus status;
+	
+	public InitialiserDonneesServiceDev() {
+		this.rest = new RestTemplate();
+		this.headers = new HttpHeaders();
+		headers.add("Content-Type", "application/json");
+		headers.add("Accept", "*/*");
 	}
 
+	public Collaborateur[] getCollaborateursFromServeur(String uri) {
+	    HttpEntity<String> requestEntity = new HttpEntity<String>("", headers);
+	    
+	    ResponseEntity<Collaborateur[]> responseEntity = rest.exchange(server + uri, HttpMethod.GET, requestEntity, Collaborateur[].class);
+	    this.setStatus(responseEntity.getStatusCode());
+	    return responseEntity.getBody();
+	  }
+	
 	@Override
 	@Transactional
 	public void initialiser() {
 		
+		List<Collaborateur> collabs = Arrays.asList(getCollaborateursFromServeur("/collaborateurs"));
 		
-		Collaborateur c = new Collaborateur();
-		c.setMatricule("UUID1");
-		c.setNom("jean");
-		c.setPrenom("malin");
-		em.persist(c);
+		collabs.stream().forEach(em::persist);
 		
-		c = new Collaborateur();
-		c.setMatricule("UUID2");
-		c.setNom("christophe");
-		c.setPrenom("jacques");
-		em.persist(c);
+		List<Collaborateur> collabsFromDb = collaborateurRepository.findAll();
+		Collaborateur c = collabsFromDb.get(2);
 		
-		c = new Collaborateur();
-		c.setMatricule("UUID3");
-		c.setNom("annabelle");
-		c.setPrenom("melissa");
-		em.persist(c);
-		
+
+		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), Statut.INITIALE, c);
+		addAbsence(LocalDate.of(2018, 01, 28),LocalDate.of(2018, 01, 28), Statut.INITIALE, c);
+		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), Statut.EN_ATTENTE_VALIDATION, c);
+	}
+	
+	private void addAbsence(LocalDate debut, LocalDate fin, Statut statut, Collaborateur collab) {
 		Absence a = new Absence();
-		a.setDateDebut(LocalDate.of(2018, 01, 19));
-		a.setDateFin(LocalDate.of(2018, 01, 19));
-		a.setStatut(Statut.INITIALE);
-		a.setCollaborateur(c);
+		a.setDateDebut(debut);
+		a.setDateFin(fin);
+		a.setStatut(statut);
+		a.setCollaborateur(collab);
 		em.persist(a);
-		
-		a = new Absence();
-		a.setDateDebut(LocalDate.of(2018, 03, 19));
-		a.setDateFin(LocalDate.of(2018, 03, 19));
-		a.setStatut(Statut.INITIALE);
-		a.setCollaborateur(c);
-		em.persist(a);
-		
-		
-		a = new Absence();
-		a.setDateDebut(LocalDate.of(2018, 01, 28));
-		a.setDateFin(LocalDate.of(2018, 01, 28));
-		a.setStatut(Statut.EN_ATTENTE_VALIDATION);
-		a.setCollaborateur(c);
-		em.persist(a);
+	}
+	
+
+	/**
+	 * @return the status
+	 */
+	public HttpStatus getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set
+	 */
+	private void setStatus(HttpStatus status) {
+		this.status = status;
 	}
 
 }

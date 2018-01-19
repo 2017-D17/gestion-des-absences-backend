@@ -28,7 +28,7 @@ public class Absence {
 	private LocalDate dateDebut;
 	private LocalDate dateFin;
 	private String motif;
-	private String type;
+	private Type type;
 	private Statut statut;
 	
 	@ManyToOne
@@ -97,14 +97,14 @@ public class Absence {
 	/**
 	 * @return the type
 	 */
-	public String getType() {
+	public Type getType() {
 		return type;
 	}
 
 	/**
 	 * @param type the type to set
 	 */
-	public void setType(String type) {
+	public void setType(Type type) {
 		this.type = type;
 	}
 

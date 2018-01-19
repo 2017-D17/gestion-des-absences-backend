@@ -27,7 +27,7 @@ public class AbsenceControllerIntegrationTest {
 		
 		// lister pour vérifier l'insertion
 		
-		ResponseEntity<Absence[]> responseEntity = this.restTemplate.getForEntity("/absences/UUID3", Absence[].class);
+		ResponseEntity<Absence[]> responseEntity = this.restTemplate.getForEntity("/absences/8b2d3ac7", Absence[].class);
 		
 		Absence[] absences = responseEntity.getBody();
 		// envoyer une requête http
