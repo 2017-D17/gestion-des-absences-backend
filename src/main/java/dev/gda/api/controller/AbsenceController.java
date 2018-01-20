@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.Collaborateur;
 import dev.gda.api.entite.Statut;
+import dev.gda.api.exception.AbsenceException;
 import dev.gda.api.repository.AbsenceRepository;
 import dev.gda.api.repository.CollaborateurRepository;
 
@@ -48,18 +49,18 @@ public class AbsenceController {
 	 * @return 
 	 * 			  La liste des demandes d'absence ou null
 	 * 
-	 * @throws Exception
+	 * @throws AbsenceException
 	 */
 	@GetMapping("/{matricule}")
 	public List<Absence> listerAbsence(@PathVariable String matricule,
-			@RequestParam(value = "statut", required = false) Optional<Statut> statut) throws Exception {
+			@RequestParam(value = "statut", required = false) Optional<Statut> statut) throws AbsenceException {
 
 		if (matricule == null || matricule.trim().isEmpty()) {
-			throw new Exception("Matricule can be null");
+			throw new AbsenceException("Matricule can be null");
 		}
 
 		Collaborateur c = this.collaborateurRepository.findByMatricule(matricule.trim())
-				.orElseThrow(() -> new Exception("Employee not found"));
+				.orElseThrow(() -> new AbsenceException("Employee not found"));
 
 		if (statut.isPresent()) {
 			return this.absenceRepository.findByCollaborateurAndStatut(c, statut.get());
@@ -71,27 +72,27 @@ public class AbsenceController {
 	/**
 	 * Cette méthode permet d'ajouter une absence
 	 * 
-	 * Une exception est levée dans le cas où le matricule est null ou vide
+	 * Une exception est levée :
+	 *   si le matricule est null ou vide
+	 *   si l'absence à ajouter est invalide
 	 * 
 	 * @param absence
 	 * 			L'absence a ajouté
-	 * @throws Exception
+	 * 
+	 * @throws AbsenceException
 	 */
 	@PostMapping
-	public Absence ajouterAbsence(@RequestBody Absence absence) throws Exception {
+	public Absence ajouterAbsence(@RequestBody Absence absence) throws AbsenceException {
 
 		if (absenceValidator.isValid(absence)) {
 
 			Collaborateur c = this.collaborateurRepository
-					.findByMatricule(absence.getCollaborateur().getMatricule().trim())
-					.orElseThrow(() -> new Exception("No Employee has been found"));
+					.findByMatricule(absence.getCollaborateur().getMatricule().trim())					
+					.orElseThrow(() -> new AbsenceException("No Employee has been found"));
 
 			absence.setCollaborateur(c);
 
-			// * une fois créée, ma demande est au statut INITIALE
 			absence.setStatut(Statut.INITIALE);
-			// * une demande d'absence ne modifie pas le solde des compteurs de congés.
-			// Cette opération est effectuée par le traitement de nuit.
 
 			return this.absenceRepository.save(absence);
 		}
