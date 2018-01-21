@@ -6,8 +6,10 @@ import dev.gda.api.exception.JourFerieException;
 import dev.gda.api.repository.JourFerieRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,22 +36,22 @@ public class JourFerieController {
    *
    */
   @PostMapping
-  public JourFerie ajouterJoursFeries(@RequestBody @Valid JourFerie jourFerie) throws JourFerieException {
+  public JourFerie ajouterJoursFeries(@RequestBody @Valid JourFerie jourFerie, HttpServletResponse resp) throws JourFerieException {
 
     // un jour férié ne peut pas être saisi dans le passé
     if (jourFerie.getDate().isBefore(LocalDate.now())) {
-      throw new JourFerieException("JourFerie Invalid");
+      throw new JourFerieException("Date is in the past");
     }
 
     // * le commentaire est obligatoire pour les jours feriés.
     if (jourFerie.getType().equals(JourFerieType.JOUR_FERIE)) {
 
       if (jourFerie.getCommentaire() == null || jourFerie.getCommentaire().trim().isEmpty()) {
-        throw new JourFerieException("JourFerie Invalid");
+        throw new JourFerieException("A comment is required for this type");
       }
     }else {
       if (jourFerie.getDate().getDayOfWeek().equals(DayOfWeek.SATURDAY) || jourFerie.getDate().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-        throw new JourFerieException("JourFerie Invalid");
+        throw new JourFerieException("Date is invalid for this type");
       }
       
       // TODO (me)
@@ -59,9 +61,10 @@ public class JourFerieController {
     }
     // * il est interdit de saisir un jour férié à la même date qu'un autre jour férié
     if (this.jourFerieRepository.findByDate(jourFerie.getDate()).isPresent()) {
-      throw new JourFerieException("JourFerie Invalid");
+      throw new JourFerieException("Day off already exist for this date");
     }
 
+    resp.setStatus(201);
     return this.jourFerieRepository.save(jourFerie);
   }
 
