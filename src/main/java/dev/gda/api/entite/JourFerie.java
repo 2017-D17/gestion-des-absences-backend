@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 /**
  * Cette classe represente l'entité jour férié
@@ -23,7 +24,9 @@ public class JourFerie {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
+  @NotNull
   private LocalDate date;
+  @NotNull
   private JourFerieType type;
   private String commentaire;
   

@@ -14,8 +14,9 @@ public class JourFerieControllerIntegrationTest {
   
   @Autowired
   private TestRestTemplate restTemplate;
-
+  
   @Test
-  public void test_scenario_jour_feries() {    
+  public void test_scenario_jour_feries(){
+
   }
 }
