@@ -44,7 +44,5 @@ public class GlobalExceptionController extends ResponseEntityExceptionHandler{
         new GlobalApiErrorEntity(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), errors);
       
       return handleExceptionInternal(ex, gae, headers, gae.getStatus(), request);
-
   }
-
 }

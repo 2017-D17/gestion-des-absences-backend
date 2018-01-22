@@ -63,6 +63,13 @@ public class JourFerieControllerIntegrationTest {
 		JourFerie[] abs2 = re2.getBody();
 		assertThat(abs2.length).isEqualTo(1);
 
+		// suppression
+		this.restTemplate.delete("/jours_feries/" + jfr.getId());
+
+		// lister pour vérifier suppression
+		ResponseEntity<JourFerie[]> re3 = this.restTemplate.getForEntity("/jours_feries", JourFerie[].class);
+		JourFerie[] abs3 = re3.getBody();
+		assertThat(abs3.length).isEqualTo(0);
 	}
 
 }
