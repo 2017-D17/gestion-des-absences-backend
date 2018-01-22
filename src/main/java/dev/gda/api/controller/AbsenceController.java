@@ -1,5 +1,6 @@
 package dev.gda.api.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,6 +8,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -206,5 +208,30 @@ public class AbsenceController {
 		if(absence.getStatut().equals(AbsenceStatut.INITIALE)) {
 			throw new AbsenceException("This is already in this status");
 		}
+	}
+
+
+	/**
+	 * Cette méthode permet de supprimer une absence
+	 * 
+	 * @param absenceId
+	 *       L'identifiant de l'absence à supprimer
+	 *       
+	 * @throws AbsenceNotFoundException
+	 * @throws AbsenceException 
+	 */
+	@DeleteMapping("/{absenceId}")
+	public void supprimerAbsence(@PathVariable Optional<Integer> absenceId) throws AbsenceNotFoundException, AbsenceException{
+	  
+	  Absence abs = absenceId.map(this.absenceRepository::findOne)
+	              .orElseThrow(()-> new AbsenceNotFoundException("Absence not found"));
+	  
+	  LocalDate now = LocalDate.now();
+	  
+	  if(abs.getDateDebut().isBefore(now) || abs.getDateDebut().isEqual(now) ) {
+	    throw new AbsenceException("Absence is already begin");
+	  }
+	  
+	  this.absenceRepository.delete(absenceId.get());
 	}
 }

@@ -85,6 +85,16 @@ public class AbsenceControllerIntegrationTest {
 		ResponseEntity<Absence[]> re3 = this.restTemplate.getForEntity("/absences/8b2d3ac7", Absence[].class);
 		Absence[] abs3 = re3.getBody();
 		assertThat(abs3.length).isEqualTo(4);
-
+		
+		
+		this.restTemplate.delete("/absences/" + abr2.getId());
+		
+		// lister pour vérifier suppression
+		ResponseEntity<Absence[]> re4 = this.restTemplate.getForEntity("/absences/8b2d3ac7", Absence[].class);
+		Absence[] abs4 = re4.getBody();
+		assertThat(abs4.length).isEqualTo(3);
+		
+		
+		
 	}
 }
