@@ -153,7 +153,8 @@ public class AbsenceController {
 			List<Absence> absList = this.absenceRepository.findInvalidCreneaux(c.getMatricule(), absence.getDateDebut(),
 					absence.getDateFin());
 
-			if (absList.size() > 1 || absList.get(0).getId() != absenceToModify.getId()) {
+			System.out.println(absList.isEmpty());
+			if (!absList.isEmpty() && (absList.size() > 1 || absList.get(0).getId() != absenceToModify.getId())) {
 				throw new AbsenceException("A demand has been found");
 			}
 
