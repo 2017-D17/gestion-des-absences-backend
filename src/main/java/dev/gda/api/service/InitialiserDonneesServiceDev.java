@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceStatut;
+import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 import dev.gda.api.repository.CollaborateurRepository;
 
@@ -72,6 +73,7 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		Absence a = new Absence();
 		a.setDateDebut(debut);
 		a.setDateFin(fin);
+		a.setType(AbsenceType.CONGE_PAYE);
 		a.setStatut(statut);
 		a.setCollaborateur(collab);
 		em.persist(a);

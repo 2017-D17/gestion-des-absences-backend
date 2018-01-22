@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceStatut;
+import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 
 @SpringBootTest
@@ -40,6 +41,7 @@ public class AbsenceRepositoryTest {
     Absence absence = new Absence();
     absence.setDateDebut(LocalDate.now().plusDays(2));
     absence.setDateFin(LocalDate.now().plusDays(4));
+    absence.setType(AbsenceType.CONGE_PAYE);
     absence.setStatut(AbsenceStatut.INITIALE);
     absence.setCollaborateur(jean);
     this.absenceRepository.save(absence);

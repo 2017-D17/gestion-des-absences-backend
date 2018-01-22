@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 /**
  * Cette classe represente l'entité absence
@@ -25,9 +26,12 @@ public class Absence {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+	@NotNull
 	private LocalDate dateDebut;
+	@NotNull
 	private LocalDate dateFin;
 	private String motif;
+	@NotNull
 	private AbsenceType type;
 	private AbsenceStatut statut;
 	
