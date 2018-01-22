@@ -25,20 +25,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import dev.gda.api.entite.Collaborateur;
+import dev.gda.api.service.TokenService;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 	private AuthenticationManager authenticationManager;
+	private TokenService tokenSvc;
 
 	public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
 		this.authenticationManager = authenticationManager;
+		this.tokenSvc = tokenSvc;
 	}
 
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res)
 			throws AuthenticationException {
+		
 		try {
 			Collaborateur creds = new ObjectMapper().readValue(req.getInputStream(), Collaborateur.class);
-
 			return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(creds.getEmail(),
 					creds.getPassword(), new ArrayList<>()));
 		} catch (IOException e) {
@@ -49,11 +52,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	@Override
 	protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain,
 			Authentication auth) throws IOException, ServletException {
-		String role = auth.getAuthorities().toArray()[0].toString();
-		String token = Jwts.builder().setSubject(((User) auth.getPrincipal()).getUsername())
-				.setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-				  .claim("role", role)
-				.signWith(SignatureAlgorithm.HS512, SECRET.getBytes()).compact();
+		String token = tokenSvc.makeToken(auth);
+		System.out.println(token);
 		res.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
 	}
 }

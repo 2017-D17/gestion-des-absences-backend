@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceStatut;
 import dev.gda.api.entite.Collaborateur;
+import dev.gda.api.entite.Collaborateur.Role;
 import dev.gda.api.repository.CollaborateurRepository;
 
 @Service
@@ -56,16 +57,14 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 	public void initialiser() {
 		
 		List<Collaborateur> collabs = Arrays.asList(getCollaborateursFromServeur("/collaborateurs"));
-		
 		collabs.stream().forEach(em::persist);
 		
 		List<Collaborateur> collabsFromDb = collaborateurRepository.findAll();
-		Collaborateur c = collabsFromDb.get(2);
+		collabsFromDb.forEach(c -> c.setRole(Role.ADMIN));
 		
-
-		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), AbsenceStatut.INITIALE, c);
-		addAbsence(LocalDate.of(2018, 01, 28),LocalDate.of(2018, 01, 28), AbsenceStatut.INITIALE, c);
-		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c);
+		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), AbsenceStatut.INITIALE, collabsFromDb.get(1));
+		addAbsence(LocalDate.of(2018, 01, 28),LocalDate.of(2018, 01, 28), AbsenceStatut.INITIALE, collabsFromDb.get(2));
+		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, collabsFromDb.get(3));
 	}
 	
 	private void addAbsence(LocalDate debut, LocalDate fin, AbsenceStatut statut, Collaborateur collab) {

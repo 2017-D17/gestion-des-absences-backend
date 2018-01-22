@@ -3,14 +3,19 @@ package dev.gda.api.entite;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-/**
- * 
- * 
- *
- */
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 @Entity
 public class Collaborateur {
 
+	public enum Role {
+		ADMIN, MANAGER, EMPLOYE;
+		public GrantedAuthority getAuthority() {
+			return new SimpleGrantedAuthority(this.name());
+		}
+	}
+	
 	@Id
 	private String matricule;
 	private String nom;

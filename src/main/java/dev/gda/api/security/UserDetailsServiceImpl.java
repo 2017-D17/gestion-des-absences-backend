@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import dev.gda.api.entite.Collaborateur;
-import dev.gda.api.entite.Role;
+import dev.gda.api.entite.Collaborateur.Role;
 import dev.gda.api.repository.CollaborateurRepository;
 import dev.gda.api.service.HttpService;
 
@@ -38,7 +38,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 			mail = collabExist.getEmail();
 			role = collabExist.getRole();
 		} else {
-			List<Collaborateur> newCollab = http.getService().getCollabInfoByEmail(email).toBlocking().first();
+			List<Collaborateur> newCollab = http.getCollabService().getCollabInfoByEmail(email).toBlocking().first();
 
 			if (newCollab.isEmpty()) {
 				throw new UsernameNotFoundException(email);
