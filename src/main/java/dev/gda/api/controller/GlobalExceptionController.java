@@ -2,6 +2,7 @@ package dev.gda.api.controller;
 
 import dev.gda.api.exception.GlobalApiErrorEntity;
 import dev.gda.api.exception.JourFerieException;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
@@ -25,7 +26,6 @@ public class GlobalExceptionController extends ResponseEntityExceptionHandler{
       new GlobalApiErrorEntity(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), "");
     return new ResponseEntity<Object>(gae,HttpStatus.BAD_REQUEST);
   }
-
   
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -44,6 +44,7 @@ public class GlobalExceptionController extends ResponseEntityExceptionHandler{
         new GlobalApiErrorEntity(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), errors);
       
       return handleExceptionInternal(ex, gae, headers, gae.getStatus(), request);
+
   }
 
 }
