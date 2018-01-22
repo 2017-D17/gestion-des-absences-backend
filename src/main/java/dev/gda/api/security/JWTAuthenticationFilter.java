@@ -36,7 +36,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res)
 			throws AuthenticationException {
-		System.out.println("-----------------------------attemptAuthentication");
 		try {
 			Collaborateur creds = new ObjectMapper().readValue(req.getInputStream(), Collaborateur.class);
 
@@ -50,7 +49,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	@Override
 	protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain,
 			Authentication auth) throws IOException, ServletException {
-		System.out.println("-----------------------------successfulAuthentication");
 		String role = auth.getAuthorities().toArray()[0].toString();
 		String token = Jwts.builder().setSubject(((User) auth.getPrincipal()).getUsername())
 				.setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
