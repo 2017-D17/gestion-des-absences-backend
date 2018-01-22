@@ -8,6 +8,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -166,4 +167,44 @@ public class AbsenceController {
 		return null;
 	}
 
+
+	/**
+	 * Cette méthode permet de modifier le statut 
+	 * d'une demande  d'absence
+	 * 
+	 * Une exception est levée dans le cas où l'id est null ou vide
+	 * 
+	 * @param absence
+	 * 			L'absence a ajouté
+	 * @throws Exception
+	 */
+	@PatchMapping("/{absenceId}")
+	public Absence modifierStatutAbsence(@PathVariable Optional<Integer> absenceId, @RequestBody Absence absence) throws AbsenceException {
+		checkAbsenceForModifierStatut(absence);
+
+		Absence absenceFromRepo = absenceId.map(this.absenceRepository::findOne).orElseThrow(() -> new AbsenceNotFoundException("Absence not found"));
+		absenceFromRepo.setStatut(absence.getStatut());
+		return this.absenceRepository.save(absenceFromRepo);
+
+	}
+	
+	/**
+	 * Cette méthode permet de valider 
+	 * l'absence lors de la mise à jour du statut
+	 * 
+	 * @param absence
+	 * 			l'absence à valider
+	 * 
+	 * @throws Exception
+	 */
+	private void checkAbsenceForModifierStatut(Absence absence) throws AbsenceException {
+
+		if(absence.getStatut() == null) {
+			throw new AbsenceException("Statut is missing");
+		}
+		
+		if(absence.getStatut().equals(AbsenceStatut.INITIALE)) {
+			throw new AbsenceException("This is already in this status");
+		}
+	}
 }

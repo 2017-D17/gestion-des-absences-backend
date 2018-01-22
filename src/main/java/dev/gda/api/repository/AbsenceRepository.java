@@ -22,4 +22,5 @@ public interface AbsenceRepository extends JpaRepository<Absence, Integer> {
 			+ "a.dateDebut >= :dateDebut and a.dateDebut <= :dateFin or "
 			+ "a.dateFin >= :dateDebut and a.dateFin <= :dateFin  ) ")
 	List<Absence> findInvalidCreneaux(@Param("matricule") String matricule , @Param("dateDebut") LocalDate dateDebut, @Param("dateFin") LocalDate dateFin);
+
 }

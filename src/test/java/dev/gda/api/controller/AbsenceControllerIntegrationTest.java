@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import dev.gda.api.entite.Absence;
+import dev.gda.api.entite.AbsenceStatut;
 import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 
@@ -47,8 +48,7 @@ public class AbsenceControllerIntegrationTest {
 		assertThat(abr.getMotif()).isEqualTo(ab.getMotif());
 
 		// lister pour vérifier l'insertion
-		ResponseEntity<Absence[]> re = this.restTemplate.getForEntity("/absences/8b2d3ac7",
-				Absence[].class);
+		ResponseEntity<Absence[]> re = this.restTemplate.getForEntity("/absences/8b2d3ac7", Absence[].class);
 		Absence[] abs = re.getBody();
 		assertThat(abs.length).isEqualTo(4);
 
@@ -65,12 +65,26 @@ public class AbsenceControllerIntegrationTest {
 		assertThat(abr2.getId()).isNotNull();
 		assertThat(abr2.getId()).isEqualTo(abr.getId());
 		assertThat(abr2.getMotif()).isEqualTo(abr.getMotif());
-		
+
 		// lister pour vérifier modification
-		ResponseEntity<Absence[]> re2 = this.restTemplate.getForEntity("/absences/8b2d3ac7",
-				Absence[].class);
+		ResponseEntity<Absence[]> re2 = this.restTemplate.getForEntity("/absences/8b2d3ac7", Absence[].class);
 		Absence[] abs2 = re2.getBody();
 		assertThat(abs2.length).isEqualTo(4);
+
+		// modification statut
+		abr2.setStatut(AbsenceStatut.EN_ATTENTE_VALIDATION);
+	
+		Absence abr3 = this.restTemplate.postForObject("/absences/" + abr2.getId() + "?_method=patch", abr2, Absence.class);
+		// vérification modification statut
+		assertThat(abr3).isNotNull();
+		assertThat(abr3.getId()).isNotNull();
+		assertThat(abr3.getId()).isEqualTo(abr2.getId());
+		assertThat(abr3.getStatut()).isEqualTo(abr2.getStatut());
+
+		// lister pour vérifier modification statut
+		ResponseEntity<Absence[]> re3 = this.restTemplate.getForEntity("/absences/8b2d3ac7", Absence[].class);
+		Absence[] abs3 = re3.getBody();
+		assertThat(abs3.length).isEqualTo(4);
 
 	}
 }
