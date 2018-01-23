@@ -4,9 +4,16 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 /**
+ * Cette classe represente l'entité collaborateur
  * 
+ * Un collaborateur se définit par :
+ *    - un matricule
+ *    - un nom
+ *    - un prenom
+ *    - un nombre de jour de congé
+ *    - un nombre de rtt
+ *    - un nombre de rtt employeur
  * 
- *
  */
 @Entity
 public class Collaborateur {
@@ -15,9 +22,58 @@ public class Collaborateur {
 	private String matricule;
 	private String nom;
 	private String prenom;
+	private Integer conges;
+	private Integer rtt;
+	private Integer rttEmployeur;
+	
+	/**
+	 * @return the conges
+	 */
+	public Integer getConges() {
+		return conges;
+	}
+
+	/**
+	 * @param conges the conges to set
+	 */
+	public void setConges(Integer conges) {
+		this.conges = conges;
+	}
+
+	/**
+	 * @return the rtt
+	 */
+	public Integer getRtt() {
+		return rtt;
+	}
+
+	/**
+	 * @param rtt the rtt to set
+	 */
+	public void setRtt(Integer rtt) {
+		this.rtt = rtt;
+	}
+
+	/**
+	 * @return the rttEmployeur
+	 */
+	public Integer getRttEmployeur() {
+		return rttEmployeur;
+	}
+
+	/**
+	 * @param rttEmployeur the rttEmployeur to set
+	 */
+	public void setRttEmployeur(Integer rttEmployeur) {
+		this.rttEmployeur = rttEmployeur;
+	}
+	
 	
 	public Collaborateur() {
-
+		super();
+		this.conges = 25;
+		this.rtt = 6;
+		this.rttEmployeur = 4;
 	}
 
 	/**

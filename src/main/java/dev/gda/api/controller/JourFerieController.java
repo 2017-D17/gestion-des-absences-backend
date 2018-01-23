@@ -1,9 +1,13 @@
 package dev.gda.api.controller;
 
+import dev.gda.api.entite.Absence;
+import dev.gda.api.entite.AbsenceStatut;
+import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.JourFerie;
 import dev.gda.api.entite.JourFerieType;
 import dev.gda.api.exception.JourFerieException;
-
+import dev.gda.api.repository.AbsenceRepository;
+import dev.gda.api.repository.CollaborateurRepository;
 import dev.gda.api.repository.JourFerieRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -37,6 +41,12 @@ public class JourFerieController {
 	@Autowired
 	private JourFerieRepository jourFerieRepository;
 
+	@Autowired
+	private CollaborateurRepository collaborateurRepository;
+
+	@Autowired
+	private AbsenceRepository absenceRepository;
+
 	/**
 	 * Cette mérhode permet de lister tous les jours fériés
 	 * 
@@ -66,10 +76,17 @@ public class JourFerieController {
 
 		if (jourFerie.getType().equals(JourFerieType.RTT_EMPLOYEUR)) {
 
-			// TODO (me)
 			// * Si une RTT employeur est créée alors le système créé une demande d'abence
 			// au statut INITIALE.
-			// Cette demande sera traitée lors du passage du batch de nuit.
+			Absence a = new Absence();
+			a.setDateDebut(jourFerie.getDate());
+			a.setDateFin(jourFerie.getDate());
+			a.setType(AbsenceType.RTT_EMPLOYEUR);
+			a.setStatut(AbsenceStatut.INITIALE);
+			this.collaborateurRepository.findAll().stream().forEach(c -> {
+				a.setCollaborateur(c);
+				this.absenceRepository.save(a);
+			});
 
 		}
 
@@ -97,7 +114,7 @@ public class JourFerieController {
 		// * il est interdit de saisir un jour férié à la même date qu'un autre jour
 		// férié
 		List<JourFerie> jfs = this.jourFerieRepository.findByDate(jourFerie.getDate());
-		if (jfs.size() > 1) {
+		if (!jfs.isEmpty() && jfs.size() > 1) {
 			throw new JourFerieException("Day off already exist for this date");
 		}
 
@@ -105,6 +122,34 @@ public class JourFerieController {
 				.orElseThrow(() -> new JourFerieNotFoundException("Day off not found"));
 
 		// TODO (me) Il n'est pas possible de modifier une RTT employeur VALIDEE
+		if (jourFerieToModify.getType().equals(JourFerieType.RTT_EMPLOYEUR)) {
+			
+			
+			List<Absence> absences = this.absenceRepository.findByTypeAndDateDebut(AbsenceType.RTT_EMPLOYEUR,
+					jourFerieToModify.getDate());
+			if (!absences.isEmpty()) {
+
+				if (absences.get(0).getStatut().equals(AbsenceStatut.VALIDEE)) {
+					throw new JourFerieException("Day off can not be modified");
+				} else {
+
+					if (jourFerie.getType().equals(JourFerieType.RTT_EMPLOYEUR)
+							&& !jourFerie.getDate().isEqual(jourFerieToModify.getDate())) {
+						absences.stream().forEach(a -> {
+							a.setDateDebut(jourFerie.getDate());
+							a.setDateFin(jourFerie.getDate());
+							this.absenceRepository.save(a);
+						});
+					}
+
+					if (jourFerie.getType().equals(JourFerieType.JOUR_FERIE)) {
+						absences.stream().forEach(a -> {
+							this.absenceRepository.delete(a.getId());
+						});
+					}
+				}
+			}
+		}
 
 		jourFerieToModify.setDate(jourFerie.getDate());
 		jourFerieToModify.setType(jourFerie.getType());
@@ -149,11 +194,10 @@ public class JourFerieController {
 	 * @param jourFerieId
 	 *            l'id du jour férié
 	 * @param response
-	 * @throws JourFerieNotFoundException
 	 * @throws JourFerieException
 	 */
 	@DeleteMapping("/{jourFerieId}")
-	public void supprimerJoursFerie(@PathVariable Optional<Integer> jourFerieId, HttpServletResponse response)
+	public void supprimerJourFerie(@PathVariable Optional<Integer> jourFerieId, HttpServletResponse response)
 			throws JourFerieException {
 		JourFerie jf = jourFerieId.map(this.jourFerieRepository::findOne)
 				.orElseThrow(() -> new JourFerieNotFoundException("Day off not Found"));
@@ -163,7 +207,22 @@ public class JourFerieController {
 			throw new JourFerieException("Day off is already past");
 		}
 		// TODO (me) il n'est pas possible de supprimer une RTT employeur validée
-
+		if (jf.getType().equals(JourFerieType.RTT_EMPLOYEUR)) {
+			
+			List<Absence> absences = this.absenceRepository.findByTypeAndDateDebut(AbsenceType.RTT_EMPLOYEUR,
+					jf.getDate());
+			if (!absences.isEmpty()) {
+				if (absences.get(0).getStatut().equals(AbsenceStatut.VALIDEE)) {
+					response.setStatus(400);
+					throw new JourFerieException("Day off can not be deleted");
+				}else {
+					absences.stream().forEach(a -> {
+						this.absenceRepository.delete(a.getId());
+					});
+				}
+			}
+		}
+		
 		this.jourFerieRepository.delete(jf.getId());
 	}
 

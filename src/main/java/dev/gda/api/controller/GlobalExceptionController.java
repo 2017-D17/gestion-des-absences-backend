@@ -2,6 +2,7 @@ package dev.gda.api.controller;
 
 import dev.gda.api.exception.AbsenceException;
 import dev.gda.api.exception.GlobalApiErrorEntity;
+import dev.gda.api.exception.JourFerieException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class GlobalExceptionController extends ResponseEntityExceptionHandler{
     
-  @ExceptionHandler(AbsenceException.class)
+  @ExceptionHandler({AbsenceException.class, JourFerieException.class})
   public ResponseEntity<Object> handleJourFerieException(AbsenceException ex) {
     GlobalApiErrorEntity gae = 
       new GlobalApiErrorEntity(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), "");

@@ -9,13 +9,16 @@ import org.springframework.data.repository.query.Param;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceStatut;
+import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 
 public interface AbsenceRepository extends JpaRepository<Absence, Integer> {
 
 	List<Absence> findByCollaborateur(Collaborateur collaborateur);
 	List<Absence> findByStatut(AbsenceStatut statut);
-	
+	List<Absence> findByStatutOrderByIdAsc(AbsenceStatut statut);
+	List<Absence> findByTypeAndDateDebut(AbsenceType type, LocalDate dateDebut);
+
 	@Query("select a from Absence a "
 			+ "where a.collaborateur.matricule = :matricule and "
 			+ "(a.dateDebut <= :dateDebut and a.dateFin >= :dateFin or "
