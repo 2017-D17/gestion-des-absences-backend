@@ -26,6 +26,13 @@ public class Collaborateur {
 	private Integer rtt;
 	private Integer rttEmployeur;
 	
+	public Collaborateur() {
+		super();
+		this.conges = 25;
+		this.rtt = 6;
+		this.rttEmployeur = 4;
+	}
+	
 	/**
 	 * @return the conges
 	 */
@@ -68,13 +75,6 @@ public class Collaborateur {
 		this.rttEmployeur = rttEmployeur;
 	}
 	
-	
-	public Collaborateur() {
-		super();
-		this.conges = 25;
-		this.rtt = 6;
-		this.rttEmployeur = 4;
-	}
 
 	/**
 	 * @return the matricule

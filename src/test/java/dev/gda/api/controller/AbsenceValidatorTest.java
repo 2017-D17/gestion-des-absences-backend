@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceType;
+import dev.gda.api.exception.AbsenceException;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
@@ -28,12 +29,12 @@ public class AbsenceValidatorTest {
 		absence = null;
 	}
 	
-	@Test(expected = Exception.class)
+	@Test(expected = AbsenceException.class)
 	public void test_absence_is_null() throws Exception {
-		assertThat(absenceValidator.isValid(absence)).isTrue();
+		absenceValidator.isValid(absence);
 	}
 	
-	@Test(expected = Exception.class)
+	@Test(expected = AbsenceException.class)
 	public void test_absence_dateFin_before_dateDebut() throws Exception {
 		absence = new Absence();
 		absence.setDateDebut(LocalDate.now());
@@ -41,7 +42,7 @@ public class AbsenceValidatorTest {
 		assertThat(absenceValidator.isValid(absence)).isTrue();
 	}
 	
-	@Test(expected = Exception.class)
+	@Test(expected = AbsenceException.class)
 	public void test_absence_motif_required() throws Exception {
 		absence = new Absence();
 		absence.setType(AbsenceType.CONGE_SANS_SOLDE);

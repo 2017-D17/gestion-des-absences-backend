@@ -15,6 +15,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -22,12 +23,13 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice
 public class GlobalExceptionController extends ResponseEntityExceptionHandler{
-    
+  
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler({AbsenceException.class, JourFerieException.class})
-  public ResponseEntity<Object> handleJourFerieException(AbsenceException ex) {
+  public ResponseEntity<Object> handleJourFerieException(Exception ex) {
     GlobalApiErrorEntity gae = 
       new GlobalApiErrorEntity(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), "");
-    return new ResponseEntity<Object>(gae,HttpStatus.BAD_REQUEST);
+    return new ResponseEntity<>(gae,HttpStatus.BAD_REQUEST);
   }
   
   @Override
@@ -36,7 +38,7 @@ public class GlobalExceptionController extends ResponseEntityExceptionHandler{
     HttpHeaders headers, 
     HttpStatus status, 
     WebRequest request) {
-      List<String> errors = new ArrayList<String>();
+      List<String> errors = new ArrayList<>();
       for (FieldError error : ex.getBindingResult().getFieldErrors()) {
           errors.add(error.getField() + ": " + error.getDefaultMessage());
       }
@@ -56,7 +58,7 @@ public class GlobalExceptionController extends ResponseEntityExceptionHandler{
    
       GlobalApiErrorEntity apiError = 
         new GlobalApiErrorEntity(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), error);
-      return new ResponseEntity<Object>(apiError, new HttpHeaders(), apiError.getStatus());
+      return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
   }
 
 }

@@ -38,7 +38,7 @@ public class AbsenceValidator {
 	      throw new AbsenceException("No Employee has been found");
 	    }
 	    
-	    areDateDebutDateFinValid(absence.getCollaborateur().getMatricule().trim(), absence.getDateDebut(), absence.getDateFin());
+	    areDateDebutDateFinValid(absence.getDateDebut(), absence.getDateFin());
 	    
 	    
 	    this.collaborateurRepository.findByMatricule(absence.getCollaborateur().getMatricule().trim()).orElseThrow(() -> new AbsenceException("No Employee has been found"));
@@ -50,8 +50,6 @@ public class AbsenceValidator {
 	  /**
 	   * Cette méthode permet de vérifier la validité des dates début et fin de l'absence
 	   * 
-	   * @param matricule
-	   *       Le matricule du demandeur
 	   * @param debut
 	   *       La date de début
 	   * @param fin
@@ -59,7 +57,7 @@ public class AbsenceValidator {
 	   * @return
 	   * @throws AbsenceException
 	   */
-	  private boolean areDateDebutDateFinValid(String matricule, LocalDate debut, LocalDate fin) throws AbsenceException {
+	  private boolean areDateDebutDateFinValid(LocalDate debut, LocalDate fin) throws AbsenceException {
 	    
 	    if(fin.isBefore(debut)) {
 	      throw new AbsenceException("The end date is before the begin date");
@@ -89,11 +87,8 @@ public class AbsenceValidator {
 	 */
 	private boolean isMotifNotRequired(String motif, AbsenceType type) throws AbsenceException {
 		
-		if(type != null) {
-			
-			if(type.equals(AbsenceType.CONGE_SANS_SOLDE) && motif == null ) {
-				throw new AbsenceException("For this type a motif is required") ;
-			}
+		if(type != null && type.equals(AbsenceType.CONGE_SANS_SOLDE) && motif == null ) {
+			throw new AbsenceException("For this type a motif is required") ;
 		}
 		return true;
 	}

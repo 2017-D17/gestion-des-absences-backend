@@ -72,7 +72,7 @@ public class AbsenceControllerIntegrationTest {
 		assertThat(abs2.length).isEqualTo(4);
 
 		// modification statut
-		abr2.setStatut(AbsenceStatut.EN_ATTENTE_VALIDATION);
+		abr2.setStatut(AbsenceStatut.VALIDEE);
 	
 		Absence abr3 = this.restTemplate.postForObject("/absences/" + abr2.getId() + "?_method=patch", abr2, Absence.class);
 		// vérification modification statut

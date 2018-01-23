@@ -1,6 +1,7 @@
 package dev.gda.api.controller;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceStatut;
+import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 import dev.gda.api.exception.AbsenceException;
 import dev.gda.api.exception.AbsenceNotFoundException;
@@ -35,6 +37,8 @@ import dev.gda.api.repository.CollaborateurRepository;
 @RequestMapping(path = "/absences")
 @CrossOrigin
 public class AbsenceController {
+
+	private final String ABSENCE_NOT_FOUND = "Absence not found";
 
 	@Autowired
 	private AbsenceRepository absenceRepository;
@@ -54,17 +58,17 @@ public class AbsenceController {
 	 *            le matricule de l'employé
 	 * @return La liste des demandes d'absence ou null
 	 * 
-	 * @throws Exception
+	 * @throws AbsenceException
 	 */
 	@GetMapping("/{matricule}")
-	public List<Absence> listerAbsenceParCollaborateur(@PathVariable String matricule) throws Exception {
+	public List<Absence> listerAbsenceParCollaborateur(@PathVariable String matricule) throws AbsenceException {
 
 		if (matricule == null || matricule.trim().isEmpty()) {
-			throw new Exception("Matricule can be null");
+			throw new AbsenceException("Matricule can be null");
 		}
 
 		Collaborateur c = this.collaborateurRepository.findByMatricule(matricule.trim())
-				.orElseThrow(() -> new Exception("Employee not found"));
+				.orElseThrow(() -> new AbsenceException("Employee not found"));
 
 		return this.absenceRepository.findByCollaborateur(c);
 	}
@@ -73,23 +77,20 @@ public class AbsenceController {
 	 * Cette méthode permet de renvoyer la liste des demandes d'absence en fonction
 	 * de leur statut
 	 * 
-	 * Une exception est levée dans le cas où le matricule est null ou vide
 	 * 
-	 * @param matricule
-	 *            le matricule de l'employé
+	 * @param statut
+	 *            le statut de l'absence
 	 * @return La liste des demandes d'absence ou null
 	 * 
-	 * @throws Exception
 	 */
 	@GetMapping
-	public List<Absence> listerAbsenceParStatut(@RequestParam(value = "statut") Optional<AbsenceStatut> statut)
-			throws Exception {
+	public List<Absence> listerAbsenceParStatut(@RequestParam(value = "statut") Optional<AbsenceStatut> statut) {
 
 		if (statut.isPresent()) {
 			return this.absenceRepository.findByStatut(statut.get());
 		}
 
-		return null;
+		return new ArrayList<>();
 	}
 
 	/**
@@ -142,12 +143,16 @@ public class AbsenceController {
 
 		if (absenceValidator.isValid(absence)) {
 			Absence absenceToModify = absenceId.map(this.absenceRepository::findOne)
-					.orElseThrow(() -> new AbsenceNotFoundException("Absence not found"));
+					.orElseThrow(() -> new AbsenceNotFoundException(ABSENCE_NOT_FOUND));
 
 			Optional.of(absenceToModify).filter(a -> {
 				return a.getStatut().equals(AbsenceStatut.INITIALE) || a.getStatut().equals(AbsenceStatut.REJETEE);
 			}).orElseThrow(() -> new AbsenceNotFoundException("Absence can not be modified"));
 
+			if(absenceToModify.getType().equals(AbsenceType.RTT_EMPLOYEUR)) {
+				  throw new AbsenceException("Can not modify this type of absence");
+			 }
+			
 			Collaborateur c = absenceToModify.getCollaborateur();
 
 			List<Absence> absList = this.absenceRepository.findInvalidCreneaux(c.getMatricule(), absence.getDateDebut(),
@@ -184,7 +189,7 @@ public class AbsenceController {
 	public Absence modifierStatutAbsence(@PathVariable Optional<Integer> absenceId, @RequestBody Absence absence) throws AbsenceException {
 		checkAbsenceForModifierStatut(absence);
 
-		Absence absenceFromRepo = absenceId.map(this.absenceRepository::findOne).orElseThrow(() -> new AbsenceNotFoundException("Absence not found"));
+		Absence absenceFromRepo = absenceId.map(this.absenceRepository::findOne).orElseThrow(() -> new AbsenceNotFoundException(ABSENCE_NOT_FOUND));
 		absenceFromRepo.setStatut(absence.getStatut());
 		return this.absenceRepository.save(absenceFromRepo);
 
@@ -197,7 +202,7 @@ public class AbsenceController {
 	 * @param absence
 	 * 			l'absence à valider
 	 * 
-	 * @throws Exception
+	 * @throws AbsenceException
 	 */
 	private void checkAbsenceForModifierStatut(Absence absence) throws AbsenceException {
 
@@ -205,8 +210,8 @@ public class AbsenceController {
 			throw new AbsenceException("Statut is missing");
 		}
 		
-		if(absence.getStatut().equals(AbsenceStatut.INITIALE)) {
-			throw new AbsenceException("This is already in this status");
+		if(absence.getStatut().equals(AbsenceStatut.EN_ATTENTE_VALIDATION) || absence.getStatut().equals(AbsenceStatut.INITIALE)) {
+			throw new AbsenceException("Can not pass in this status");
 		}
 	}
 
@@ -216,21 +221,25 @@ public class AbsenceController {
 	 * 
 	 * @param absenceId
 	 *       L'identifiant de l'absence à supprimer
-	 *       
-	 * @throws AbsenceNotFoundException
+	 *
 	 * @throws AbsenceException 
 	 */
 	@DeleteMapping("/{absenceId}")
-	public void supprimerAbsence(@PathVariable Optional<Integer> absenceId) throws AbsenceNotFoundException, AbsenceException{
+	public void supprimerAbsence(@PathVariable Optional<Integer> absenceId) throws AbsenceException{
 	  
 	  Absence abs = absenceId.map(this.absenceRepository::findOne)
-	              .orElseThrow(()-> new AbsenceNotFoundException("Absence not found"));
+	              .orElseThrow(()-> new AbsenceNotFoundException(ABSENCE_NOT_FOUND));
 	  
 	  LocalDate now = LocalDate.now();
 	  
 	  if(abs.getDateDebut().isBefore(now) || abs.getDateDebut().isEqual(now) ) {
 	    throw new AbsenceException("Absence is already begin");
 	  }
+	  
+	  if(abs.getType().equals(AbsenceType.RTT_EMPLOYEUR)) {
+		  throw new AbsenceException("Can not delete this type of absence");
+	  }
+		  
 	  
 	  this.absenceRepository.delete(absenceId.get());
 	}
