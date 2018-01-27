@@ -1,5 +1,7 @@
 package dev.gda.api.entite;
 
+import java.util.ArrayList;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -25,6 +27,8 @@ public class Collaborateur {
 	private Integer conges;
 	private Integer rtt;
 	private Integer rttEmployeur;
+	private String departement;
+	private ArrayList<String> subalternes;
 	
 	public Collaborateur() {
 		super();
@@ -117,6 +121,36 @@ public class Collaborateur {
 	public void setPrenom(String prenom) {
 		this.prenom = prenom;
 	}
+
+	/**
+	 * @return the departement
+	 */
+	public String getDepartement() {
+		return departement;
+	}
+
+	/**
+	 * @param departement the departement to set
+	 */
+	public void setDepartement(String departement) {
+		this.departement = departement;
+	}
+
+	/**
+	 * @return the subalternes
+	 */
+	public ArrayList<String> getSubalternes() {
+		return subalternes;
+	}
+
+	/**
+	 * @param subalternes the subalternes to set
+	 */
+	public void setSubalternes(ArrayList<String> subalternes) {
+		this.subalternes = subalternes;
+	}
+
+
 	
 	
 		

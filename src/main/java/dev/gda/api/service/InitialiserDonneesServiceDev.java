@@ -65,7 +65,7 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		
 
 		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), AbsenceStatut.INITIALE, c);
-		addAbsence(LocalDate.of(2018, 01, 28),LocalDate.of(2018, 01, 28), AbsenceStatut.INITIALE, c);
+		addAbsence(LocalDate.of(2018, 01, 29),LocalDate.of(2018, 01, 29), AbsenceStatut.INITIALE, c);
 		c.setConges(c.getConges() - 1);
 		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c);
 		em.persist(c);
