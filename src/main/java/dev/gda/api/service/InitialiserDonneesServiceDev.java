@@ -70,6 +70,15 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c);
 		em.persist(c);
 		
+		Collaborateur c1 = collabsFromDb.get(3);
+		
+
+		addAbsence(LocalDate.of(2018, 01, 30),LocalDate.of(2018, 01, 30), AbsenceStatut.INITIALE, c1);
+		addAbsence(LocalDate.of(2018, 02, 05),LocalDate.of(2018, 02, 25), AbsenceStatut.INITIALE, c1);
+		c1.setConges(c1.getConges() - 1);
+		addAbsence(LocalDate.of(2018, 03, 28),LocalDate.of(2018, 03, 28), AbsenceStatut.EN_ATTENTE_VALIDATION, c1);
+		em.persist(c1);
+		
 	}
 	
 	private void addAbsence(LocalDate debut, LocalDate fin, AbsenceStatut statut, Collaborateur collab) {

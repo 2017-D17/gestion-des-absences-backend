@@ -48,6 +48,17 @@ public class AbsenceController {
 
 	@Autowired
 	private AbsenceValidator absenceValidator;
+	/**
+	 * Cette méthode permet de renvoyer la liste des demandes d'absences de tous les collaborateurs
+	 * 
+	 * @return La liste des demandes d'absence ou null
+	 * 
+	 * @throws AbsenceException
+	 */
+	@GetMapping
+	public List<Absence> listerAbsences() {				
+		return this.absenceRepository.findAll();
+	}
 
 	/**
 	 * Cette méthode permet de renvoyer la liste des demandes d'absence d'un employé
@@ -83,14 +94,9 @@ public class AbsenceController {
 	 * @return La liste des demandes d'absence ou null
 	 * 
 	 */
-	@GetMapping
-	public List<Absence> listerAbsenceParStatut(@RequestParam(value = "statut") Optional<AbsenceStatut> statut) {
-
-		if (statut.isPresent()) {
-			return this.absenceRepository.findByStatut(statut.get());
-		}
-
-		return new ArrayList<>();
+	@GetMapping("/status/")
+	public List<Absence> listerAbsenceParStatut() {
+		return this.absenceRepository.findByStatut(AbsenceStatut.EN_ATTENTE_VALIDATION);
 	}
 
 	/**
