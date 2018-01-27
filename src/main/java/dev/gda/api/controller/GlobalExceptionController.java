@@ -1,6 +1,7 @@
 package dev.gda.api.controller;
 
 import dev.gda.api.exception.AbsenceException;
+import dev.gda.api.exception.CollaborateurException;
 import dev.gda.api.exception.GlobalApiErrorEntity;
 import dev.gda.api.exception.JourFerieException;
 
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -26,8 +28,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GlobalExceptionController extends ResponseEntityExceptionHandler{
   
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ExceptionHandler({AbsenceException.class, JourFerieException.class})
-  public ResponseEntity<Object> handleJourFerieException(Exception ex) {
+  @ExceptionHandler({AbsenceException.class, JourFerieException.class, CollaborateurException.class})
+  protected ResponseEntity<Object> handleJourFerieException(Exception ex) {
     GlobalApiErrorEntity gae = 
       new GlobalApiErrorEntity(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), "");
     return new ResponseEntity<>(gae,HttpStatus.BAD_REQUEST);
@@ -52,8 +54,24 @@ public class GlobalExceptionController extends ResponseEntityExceptionHandler{
       return handleExceptionInternal(ex, gae, headers, gae.getStatus(), request);
   }
   
+  @Override
+  protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
+    HttpRequestMethodNotSupportedException ex, 
+    HttpHeaders headers, 
+    HttpStatus status, 
+    WebRequest request) {
+      StringBuilder builder = new StringBuilder();
+      builder.append(ex.getMethod());
+      builder.append(" method is not supported for this request. Supported methods are ");
+      ex.getSupportedHttpMethods().forEach(t -> builder.append(t + " "));
+   
+      GlobalApiErrorEntity apiError = new GlobalApiErrorEntity(HttpStatus.METHOD_NOT_ALLOWED, 
+        ex.getLocalizedMessage(), builder.toString());
+      return new ResponseEntity<Object>(apiError, new HttpHeaders(), apiError.getStatus());
+  }
+  
   @ExceptionHandler({ MethodArgumentTypeMismatchException.class })
-  public ResponseEntity<Object> handleMethodArgumentTypeMismatch(
+  protected ResponseEntity<Object> handleMethodArgumentTypeMismatch(
     MethodArgumentTypeMismatchException ex, WebRequest request) {
       String error = ex.getName() + " should be of type " + ex.getRequiredType().getName();
    
@@ -63,7 +81,7 @@ public class GlobalExceptionController extends ResponseEntityExceptionHandler{
   }
   
   @ExceptionHandler({ AccessDeniedException.class })
-  public ResponseEntity<Object> handleAccessDeniedException(Exception ex, WebRequest request) {
+  protected ResponseEntity<Object> handleAccessDeniedException(Exception ex, WebRequest request) {
       GlobalApiErrorEntity gae = 
         new GlobalApiErrorEntity(HttpStatus.FORBIDDEN, ex.getLocalizedMessage(), "");
       return new ResponseEntity<>(gae, new HttpHeaders(), HttpStatus.FORBIDDEN);

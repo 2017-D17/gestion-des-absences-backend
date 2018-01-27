@@ -9,6 +9,10 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controlleur de la ressource absence
+ *
+ */
 @RestController
 public class AuthentificationController {
 
