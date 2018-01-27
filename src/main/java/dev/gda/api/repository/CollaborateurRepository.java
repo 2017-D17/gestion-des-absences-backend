@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import dev.gda.api.entite.Collaborateur;
 
 public interface CollaborateurRepository extends JpaRepository<Collaborateur, String> {
-	Optional<Collaborateur> findByMatricule(String matricule);
+	Optional<Collaborateur> findByEmail(String email);
 }

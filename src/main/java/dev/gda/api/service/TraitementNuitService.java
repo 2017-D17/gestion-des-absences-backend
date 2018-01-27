@@ -18,7 +18,7 @@ public class TraitementNuitService{
 	@Autowired
 	private AbsenceRepository absenceRepository;
 	
-	@Scheduled(cron = "0 0 0 * * *")
+	@Scheduled(cron = "0 0 0 * * *", zone="CET")
 	public void faireTraitement() {
 		
 		this.absenceRepository.findByStatutOrderByIdAsc(AbsenceStatut.INITIALE).stream().forEach(abs -> {

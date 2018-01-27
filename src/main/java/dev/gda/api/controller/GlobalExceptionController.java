@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -59,6 +60,13 @@ public class GlobalExceptionController extends ResponseEntityExceptionHandler{
       GlobalApiErrorEntity apiError = 
         new GlobalApiErrorEntity(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), error);
       return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
+  }
+  
+  @ExceptionHandler({ AccessDeniedException.class })
+  public ResponseEntity<Object> handleAccessDeniedException(Exception ex, WebRequest request) {
+      GlobalApiErrorEntity gae = 
+        new GlobalApiErrorEntity(HttpStatus.FORBIDDEN, ex.getLocalizedMessage(), "");
+      return new ResponseEntity<>(gae, new HttpHeaders(), HttpStatus.FORBIDDEN);
   }
 
 }

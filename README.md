@@ -9,6 +9,7 @@ Ressource Absence
 
 URI path                         |  méthode HTTP  |  Description  
 -------------------------------- | -------------- | --------------------------------------------------------------------------
+**_/absences_**                  |  GET           |  retourne la liste des demandes d'absence au format JSON
 **_/absences/{MATRICULE}_**      |  GET           |  retourne la liste des demandes d'absence d'un employé identifié par le matricule {MATRICULE}  au format JSON
 **_/absences?statut={STATUT}_**  |  GET           |  retourne la liste des demandes d'absence en fonction de leur statut {STATUT} au format JSON
 **_/absences_**                  |  POST          |  sauvegarde la demande d'absence et le retourne au format JSON
@@ -29,3 +30,8 @@ URI path                         |  méthode HTTP  |  Description
 **_/jours_feries/{JOUR_FERIE_ID}_**           |  PUT           |  met à jour le jour férié et le retourne au format JSON
 **_/jours_feries/{JOUR_FERIE_ID}_**              |  DELETE          |  supprime le jour férié avec l'identifiant {JOUR_FERIE_ID}
 
+===
+
+URI path                         |  méthode HTTP  |  Description     
+-------------------------------- | -------------- | --------------------------------------------------------------------------
+**_/logout_**              |  GET           |  

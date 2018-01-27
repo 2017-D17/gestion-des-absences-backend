@@ -4,10 +4,15 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.gda.api.entite.Absence;
@@ -48,11 +54,10 @@ public class AbsenceController {
 
 	@Autowired
 	private AbsenceValidator absenceValidator;
-
+	
+	
 	/**
 	 * Cette méthode permet de renvoyer la liste des demandes d'absence d'un employé
-	 * 
-	 * Une exception est levée dans le cas où le matricule est null ou vide
 	 * 
 	 * @param matricule
 	 *            le matricule de l'employé
@@ -61,57 +66,90 @@ public class AbsenceController {
 	 * @throws AbsenceException
 	 */
 	@GetMapping("/{matricule}")
-	public List<Absence> listerAbsenceParCollaborateur(@PathVariable String matricule) throws AbsenceException {
+	@Secured("ROLE_USER")
+	public List<Absence> listerAbsenceParCollaborateur(@PathVariable Optional<String> matricule) throws AbsenceException {
 
-		if (matricule == null || matricule.trim().isEmpty()) {
-			throw new AbsenceException("Matricule can be null");
-		}
-
-		Collaborateur c = this.collaborateurRepository.findByMatricule(matricule.trim())
+	  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
+		Collaborateur c = this.collaborateurRepository.findByEmail(auth.getName())
 				.orElseThrow(() -> new AbsenceException("Employee not found"));
+			
+		return Optional.of(c).map(this.absenceRepository::findByCollaborateur)
+				.orElseGet(() -> new ArrayList<Absence>());
 
-		return this.absenceRepository.findByCollaborateur(c);
 	}
 
 	/**
-	 * Cette méthode permet de renvoyer la liste des demandes d'absence en fonction
+	 * Cette méthode permet de renvoyer la liste de toutes demandes d'absence en fonction
 	 * de leur statut
 	 * 
 	 * 
-	 * @param statut
-	 *            le statut de l'absence
+	 * @param statut le statut de l'absence
 	 * @return La liste des demandes d'absence ou null
+	 * @throws AbsenceException 
 	 * 
 	 */
 	@GetMapping
-	public List<Absence> listerAbsenceParStatut(@RequestParam(value = "statut") Optional<AbsenceStatut> statut) {
+	@Secured("ROLE_MANAGER")
+	public List<Absence> listerAbsence(@RequestParam(value = "statut", required = false) Optional<AbsenceStatut> statut) throws AbsenceException {
 
+		List<Absence> absences = this.absenceRepository.findAll();
+		
 		if (statut.isPresent()) {
-			return this.absenceRepository.findByStatut(statut.get());
+		  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    
+	    Collaborateur manager = this.collaborateurRepository.findByEmail(auth.getName())
+	        .orElseThrow(() -> new AbsenceException("Employee not found"));
+
+	    if(!manager.getSubalternes().isEmpty()) {
+	      List<Absence> absencesSub = new ArrayList<>();
+	      manager.getSubalternes().forEach( sub -> {
+	        List<Absence> abs = getAllSubalterneAbsencesByStatut(sub, absences, statut.get());
+	        if(!abs.isEmpty()) {
+	          absencesSub.addAll(abs);
+	        }
+	      });
+	      return absencesSub;
+	    } 
 		}
 
-		return new ArrayList<>();
+		return absences;
 	}
+	
+	/**
+	 * Cette méthode permet de récupérer la liste des demandes d'un subalterne en fonction de son statut
+	 * 
+	 * @param subalterne le subalterne
+	 * @param absences la liste des demandes d'absence de tous les collaborateurs 
+	 * @param statut le statut de la demande
+	 *       
+	 * @return la liste des demandes d'absence du subalterne ou une liste vide
+	 */
+	private List<Absence> getAllSubalterneAbsencesByStatut(Collaborateur subalterne, List<Absence> absences, AbsenceStatut statut){
+	  return absences.stream()
+  	  .filter(a -> a.getStatut().equals(statut) && a.getCollaborateur().getMatricule().equals(subalterne.getMatricule()))
+  	  .collect(Collectors.toList());
+	}
+	
 
 	/**
 	 * Cette méthode permet d'ajouter une absence
 	 * 
-	 * Une exception est levée : si le matricule est null ou vide si l'absence à
-	 * ajouter est invalide
-	 * 
-	 * @param absence
-	 *            L'absence a ajouté
+	 * @param absence l'absence a ajouté
 	 * 
 	 * @throws AbsenceException
 	 */
 	@PostMapping
+	@Secured("ROLE_USER")
+	@ResponseStatus(HttpStatus.CREATED)
 	public Absence ajouterAbsence(@RequestBody @Valid Absence absence) throws AbsenceException {
 
 		if (absenceValidator.isValid(absence)) {
 
-			Collaborateur c = this.collaborateurRepository
-					.findByMatricule(absence.getCollaborateur().getMatricule().trim())
-					.orElseThrow(() -> new AbsenceException("No Employee has been found"));
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			
+			Collaborateur c = this.collaborateurRepository.findByEmail(auth.getName())
+					.orElseThrow(() -> new AbsenceException("Employee not found"));
 
 			absence.setCollaborateur(c);
 
@@ -130,31 +168,32 @@ public class AbsenceController {
 	/**
 	 * Cette méthode permet de modifier une absence
 	 * 
-	 * @param absenceId
-	 *            l'id de l'absence
-	 * @param absence
-	 *            l'absence à modifier
-	 * @return
+	 * @param absenceId l'id de l'absence
+	 * @param absence l'absence à modifier
+	 * @return l'absence modifiée
 	 * @throws AbsenceException
 	 */
 	@PutMapping("/{absenceId}")
+	@Secured("ROLE_USER")
 	public Absence modifierAbsence(@PathVariable Optional<Integer> absenceId, @RequestBody @Valid Absence absence)
 			throws AbsenceException {
 
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
 		if (absenceValidator.isValid(absence)) {
 			Absence absenceToModify = absenceId.map(this.absenceRepository::findOne)
 					.orElseThrow(() -> new AbsenceNotFoundException(ABSENCE_NOT_FOUND));
 
 			Optional.of(absenceToModify).filter(a -> {
-				return a.getStatut().equals(AbsenceStatut.INITIALE) || a.getStatut().equals(AbsenceStatut.REJETEE);
+				return a.getStatut().equals(AbsenceStatut.INITIALE) || a.getStatut().equals(AbsenceStatut.REJETEE) || absenceToModify.getType().equals(AbsenceType.RTT_EMPLOYEUR);
 			}).orElseThrow(() -> new AbsenceNotFoundException("Absence can not be modified"));
-
-			if(absenceToModify.getType().equals(AbsenceType.RTT_EMPLOYEUR)) {
-				  throw new AbsenceException("Can not modify this type of absence");
-			 }
 			
 			Collaborateur c = absenceToModify.getCollaborateur();
-
+			
+			if(!auth.getName().equalsIgnoreCase(c.getEmail())) {
+				throw new AbsenceException("");
+			}
+			
 			List<Absence> absList = this.absenceRepository.findInvalidCreneaux(c.getMatricule(), absence.getDateDebut(),
 					absence.getDateFin());
 
@@ -181,15 +220,24 @@ public class AbsenceController {
 	 * 
 	 * Une exception est levée dans le cas où l'id est null ou vide
 	 * 
-	 * @param absence
-	 * 			L'absence a ajouté
+	 * @param absence l'absence a ajouté
 	 * @throws Exception
 	 */
 	@PatchMapping("/{absenceId}")
+	@Secured("ROLE_MANAGER")
 	public Absence modifierStatutAbsence(@PathVariable Optional<Integer> absenceId, @RequestBody Absence absence) throws AbsenceException {
 		checkAbsenceForModifierStatut(absence);
 
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		Collaborateur manager = this.collaborateurRepository.findByEmail(auth.getName())
+		  .orElseThrow(() -> new AbsenceException("Employee not found"));
+		
 		Absence absenceFromRepo = absenceId.map(this.absenceRepository::findOne).orElseThrow(() -> new AbsenceNotFoundException(ABSENCE_NOT_FOUND));
+		
+		if(!manager.getSubalternes().contains(absenceFromRepo.getCollaborateur())) {
+		  throw new AbsenceException("Can not update this absence");
+		}
+		
 		absenceFromRepo.setStatut(absence.getStatut());
 		return this.absenceRepository.save(absenceFromRepo);
 
@@ -199,8 +247,7 @@ public class AbsenceController {
 	 * Cette méthode permet de valider 
 	 * l'absence lors de la mise à jour du statut
 	 * 
-	 * @param absence
-	 * 			l'absence à valider
+	 * @param absence l'absence à valider
 	 * 
 	 * @throws AbsenceException
 	 */
@@ -219,17 +266,21 @@ public class AbsenceController {
 	/**
 	 * Cette méthode permet de supprimer une absence
 	 * 
-	 * @param absenceId
-	 *       L'identifiant de l'absence à supprimer
+	 * @param absenceId l'identifiant de l'absence à supprimer
 	 *
 	 * @throws AbsenceException 
 	 */
 	@DeleteMapping("/{absenceId}")
+	@Secured("ROLE_USER")
 	public void supprimerAbsence(@PathVariable Optional<Integer> absenceId) throws AbsenceException{
-	  
+
 	  Absence abs = absenceId.map(this.absenceRepository::findOne)
 	              .orElseThrow(()-> new AbsenceNotFoundException(ABSENCE_NOT_FOUND));
 	  
+	  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	  if(!abs.getCollaborateur().getEmail().equals(auth.getName())) {
+	    throw new AbsenceException("Can not delete this absence");
+	  }
 	  LocalDate now = LocalDate.now();
 	  
 	  if(abs.getDateDebut().isBefore(now) || abs.getDateDebut().isEqual(now) ) {
@@ -239,8 +290,7 @@ public class AbsenceController {
 	  if(abs.getType().equals(AbsenceType.RTT_EMPLOYEUR)) {
 		  throw new AbsenceException("Can not delete this type of absence");
 	  }
-		  
-	  
+
 	  this.absenceRepository.delete(absenceId.get());
 	}
 }

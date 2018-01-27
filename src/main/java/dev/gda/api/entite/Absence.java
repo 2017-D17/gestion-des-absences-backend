@@ -139,5 +139,5 @@ public class Absence {
 	public void setCollaborateur(Collaborateur collaborateur) {
 		this.collaborateur = collaborateur;
 	}
-
+	
 }
