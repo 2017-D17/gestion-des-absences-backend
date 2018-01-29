@@ -94,11 +94,33 @@ public class AbsenceController {
 	 * @return La liste des demandes d'absence ou null
 	 * 
 	 */
-	@GetMapping("/status/")
-	public List<Absence> listerAbsenceParStatut() {
-		return this.absenceRepository.findByStatut(AbsenceStatut.EN_ATTENTE_VALIDATION);
+//	@GetMapping("/status/")
+//	public List<Absence> listerAbsenceParStatut() {
+//		return this.absenceRepository.findByStatut(AbsenceStatut.EN_ATTENTE_VALIDATION);
+//	}
+
+	/**
+	 * Cette méthode permet de renvoyer la liste des demandes d'absence en fonction
+	 * de leur statut
+	 * 
+	 * 
+	 * @param statut
+	 *            le statut de l'absence
+	 * @return La liste des demandes d'absence ou null
+	 * 
+	 */
+	@GetMapping("?statut={statut}")
+	public List<Absence> listerAbsenceParStatut(@RequestParam(value = "statut") Optional<AbsenceStatut> statut) {
+
+		if (statut.isPresent()) {
+			return this.absenceRepository.findByStatut(statut.get());
+		}
+
+		return new ArrayList<>();
 	}
 
+	
+	
 	/**
 	 * Cette méthode permet d'ajouter une absence
 	 * 
