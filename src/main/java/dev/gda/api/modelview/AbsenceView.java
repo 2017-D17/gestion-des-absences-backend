@@ -1,44 +1,24 @@
-package dev.gda.api.entite;
+package dev.gda.api.modelview;
 
 import java.time.LocalDate;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotNull;
+import dev.gda.api.entite.AbsenceStatut;
+import dev.gda.api.entite.AbsenceType;
 
-/**
- * Cette classe represente l'entité absence
- * 
- * Une absence est associé à un collaborateur
- * 
- * Une absence se définit par :
- *    - une date de début 
- *    - une date de fin
- *    - un motif
- * 
- */
-@Entity
-public class Absence {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+public class AbsenceView {
+
+
 	private Integer id;
-	@NotNull
 	private LocalDate dateDebut;
-	@NotNull
 	private LocalDate dateFin;
 	private String motif;
-	@NotNull
 	private AbsenceType type;
 	private AbsenceStatut statut;
 	
-	@ManyToOne
-	private Collaborateur collaborateur;
+	private CollaborateurView collaborateur;
 	
-	public Absence() {
+	public AbsenceView() {
 		super();
 	}
 
@@ -129,14 +109,14 @@ public class Absence {
 	/**
 	 * @return the collaborateur
 	 */
-	public Collaborateur getCollaborateur() {
+	public CollaborateurView getCollaborateur() {
 		return collaborateur;
 	}
 
 	/**
 	 * @param collaborateur the collaborateur to set
 	 */
-	public void setCollaborateur(Collaborateur collaborateur) {
+	public void setCollaborateur(CollaborateurView collaborateur) {
 		this.collaborateur = collaborateur;
 	}
 	

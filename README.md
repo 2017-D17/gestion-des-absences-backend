@@ -29,3 +29,7 @@ URI path                         |  méthode HTTP  |  Description
 **_/jours_feries/{JOUR_FERIE_ID}_**           |  PUT           |  met à jour le jour férié et le retourne au format JSON
 **_/jours_feries/{JOUR_FERIE_ID}_**              |  DELETE          |  supprime le jour férié avec l'identifiant {JOUR_FERIE_ID}
 
+
+URI path                         |  méthode HTTP  |  Description     
+-------------------------------- | -------------- | --------------------------------------------------------------------------
+**_/login_**              |  POST           |  authentifie et retourne le collaborateur authentifié au format JSON

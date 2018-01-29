@@ -1,7 +1,18 @@
 package dev.gda.api.entite;
 
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 /**
  * Cette classe represente l'entité collaborateur
@@ -22,9 +33,23 @@ public class Collaborateur {
 	private String matricule;
 	private String nom;
 	private String prenom;
+	private String email;
+	private String password;
+	private String departement;
 	private Integer conges;
 	private Integer rtt;
 	private Integer rttEmployeur;
+	
+	@JsonIgnore
+	@Column(name="actif")
+	private Boolean actif;
+	
+	@ElementCollection
+	@Enumerated(EnumType.STRING)
+	private List<RoleType> roles;
+
+	@OneToMany
+	List<Collaborateur> subalternes;
 	
 	public Collaborateur() {
 		super();
@@ -32,49 +57,6 @@ public class Collaborateur {
 		this.rtt = 6;
 		this.rttEmployeur = 4;
 	}
-	
-	/**
-	 * @return the conges
-	 */
-	public Integer getConges() {
-		return conges;
-	}
-
-	/**
-	 * @param conges the conges to set
-	 */
-	public void setConges(Integer conges) {
-		this.conges = conges;
-	}
-
-	/**
-	 * @return the rtt
-	 */
-	public Integer getRtt() {
-		return rtt;
-	}
-
-	/**
-	 * @param rtt the rtt to set
-	 */
-	public void setRtt(Integer rtt) {
-		this.rtt = rtt;
-	}
-
-	/**
-	 * @return the rttEmployeur
-	 */
-	public Integer getRttEmployeur() {
-		return rttEmployeur;
-	}
-
-	/**
-	 * @param rttEmployeur the rttEmployeur to set
-	 */
-	public void setRttEmployeur(Integer rttEmployeur) {
-		this.rttEmployeur = rttEmployeur;
-	}
-	
 
 	/**
 	 * @return the matricule
@@ -118,6 +100,132 @@ public class Collaborateur {
 		this.prenom = prenom;
 	}
 	
+	/**
+	 * @return the email
+	 */
+	public String getEmail() {
+		return email;
+	}
+
+	/**
+	 * @param email the email to set
+	 */
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	/**
+	 * @return the conges
+	 */
+	public Integer getConges() {
+		return conges;
+	}
+
+	/**
+	 * @param conges the conges to set
+	 */
+	public void setConges(Integer conges) {
+		this.conges = conges;
+	}
+
+	/**
+	 * @return the rtt
+	 */
+	public Integer getRtt() {
+		return rtt;
+	}
+
+	/**
+	 * @param rtt the rtt to set
+	 */
+	public void setRtt(Integer rtt) {
+		this.rtt = rtt;
+	}
+
+	/**
+	 * @return the rttEmployeur
+	 */
+	public Integer getRttEmployeur() {
+		return rttEmployeur;
+	}
+
+	/**
+	 * @param rttEmployeur the rttEmployeur to set
+	 */
+	public void setRttEmployeur(Integer rttEmployeur) {
+		this.rttEmployeur = rttEmployeur;
+	}
+
+	/**
+	 * @return the departement
+	 */
+	public String getDepartement() {
+		return departement;
+	}
+
+	/**
+	 * @param departement the departement to set
+	 */
+	public void setDepartement(String departement) {
+		this.departement = departement;
+	}
+
+	/**
+	 * @return the password
+	 */
+	@JsonIgnore
+	public String getPassword() {
+		return password;
+	}
+
+	/**
+	 * @param password the password to set
+	 */
+	@JsonProperty
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	/**
+	 * @return the actif
+	 */
+	public Boolean getActif() {
+		return actif;
+	}
+
+	/**
+	 * @param actif the actif to set
+	 */
+	public void setActif(Boolean actif) {
+		this.actif = actif;
+	}
+
+	/**
+	 * @return the role
+	 */
+	public List<RoleType> getRoles() {
+		return roles;
+	}
+
+	/**
+	 * @param role the role to set
+	 */
+	public void setRoles(List<RoleType> roles) {
+		this.roles = roles;
+	}
 	
-		
+	/**
+	 * @return the subalternes
+	 */
+	public List<Collaborateur> getSubalternes() {
+		return subalternes;
+	}
+
+	/**
+	 * @param subalternes the subalternes to set
+	 */
+	public void setSubalternes(List<Collaborateur> subalternes) {
+		this.subalternes = subalternes;
+	}
+
 }

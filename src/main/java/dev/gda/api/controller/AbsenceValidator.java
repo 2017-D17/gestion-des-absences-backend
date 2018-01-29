@@ -2,20 +2,15 @@ package dev.gda.api.controller;
 
 import java.time.LocalDate;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.exception.AbsenceException;
-import dev.gda.api.repository.CollaborateurRepository;
 
 @Service
 public class AbsenceValidator {
-		
-	@Autowired
-	private CollaborateurRepository collaborateurRepository;
-	
+
 	  /**
 	   * Cette méthode teste si l'absence est valide ou non
 	   * 
@@ -34,14 +29,7 @@ public class AbsenceValidator {
 	    
 	    isMotifNotRequired(absence.getMotif(), absence.getType());
 	    
-	    if(absence.getCollaborateur() == null || absence.getCollaborateur().getMatricule() == null || absence.getCollaborateur().getMatricule().trim().isEmpty()) {
-	      throw new AbsenceException("No Employee has been found");
-	    }
-	    
 	    areDateDebutDateFinValid(absence.getDateDebut(), absence.getDateFin());
-	    
-	    
-	    this.collaborateurRepository.findByMatricule(absence.getCollaborateur().getMatricule().trim()).orElseThrow(() -> new AbsenceException("No Employee has been found"));
 	    
 	    return true;
 	    

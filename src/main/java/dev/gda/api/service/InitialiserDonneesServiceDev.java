@@ -1,14 +1,15 @@
 package dev.gda.api.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -21,7 +22,9 @@ import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceStatut;
 import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
+import dev.gda.api.modelview.CollaborateurView;
 import dev.gda.api.repository.CollaborateurRepository;
+import dev.gda.api.util.ModelViewUtils;
 
 @Service
 public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
@@ -32,7 +35,9 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 	@Autowired
 	private CollaborateurRepository collaborateurRepository;
 
-	private String server = "https://collab-json-api.herokuapp.com";
+	@Value("${gda.server.users.url}")
+	private String server;
+		
 	private RestTemplate rest;
 	private HttpHeaders headers;
 	private HttpStatus status;
@@ -44,10 +49,10 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		headers.add("Accept", "*/*");
 	}
 
-	public Collaborateur[] getCollaborateursFromServeur(String uri) {
+	public CollaborateurView[] getCollaborateursFromServeur(String uri) {
 	    HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
 	    
-	    ResponseEntity<Collaborateur[]> responseEntity = rest.exchange(server + uri, HttpMethod.GET, requestEntity, Collaborateur[].class);
+	    ResponseEntity<CollaborateurView[]> responseEntity = rest.exchange(server + uri, HttpMethod.GET, requestEntity,CollaborateurView[].class);
 	    this.setStatus(responseEntity.getStatusCode());
 	    return responseEntity.getBody();
 	  }
@@ -56,14 +61,25 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 	@Transactional
 	public void initialiser() {
 		
-		List<Collaborateur> collabs = Arrays.asList(getCollaborateursFromServeur("/collaborateurs"));
-		
-		collabs.stream().forEach(em::persist);
+		List<CollaborateurView> utilisateurs = Arrays.asList(getCollaborateursFromServeur("/collaborateurs"));	
+		utilisateurs.stream()
+			.map( ModelViewUtils::CollaborateurViewToCollaborateur)
+			.forEach(em::persist);
 		
 		List<Collaborateur> collabsFromDb = collaborateurRepository.findAll();
-		Collaborateur c = collabsFromDb.get(2);
 		
+		utilisateurs.stream().forEach(u -> {
+			Collaborateur col;
+			if(!u.getSubalternes().isEmpty()) {
+				col = collabsFromDb.stream()
+						.filter(c -> c.getMatricule().equals(u.getMatricule()))
+						.findFirst().get();
 
+				col.setSubalternes(getAllCollaborateurSubalternes(u.getSubalternes(), collabsFromDb));
+			}
+		});
+				
+		Collaborateur c = collabsFromDb.get(2);
 		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), AbsenceStatut.INITIALE, c);
 		addAbsence(LocalDate.of(2018, 01, 28),LocalDate.of(2018, 01, 28), AbsenceStatut.INITIALE, c);
 		c.setConges(c.getConges() - 1);
@@ -97,4 +113,26 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		this.status = status;
 	}
 
+	/**
+	 * Cette méthode permet de récuperer tous les sulbaternes
+	 * à partir d'une liste de matricules
+	 *
+	 * @param matricules la liste de matricules
+	 * @param collabs la liste des collaborateurs
+	 * 			
+	 * @return retourne la liste des subalternes
+	 */
+	private List<Collaborateur> getAllCollaborateurSubalternes(List<String> matricules, List<Collaborateur> collabs){
+		List<Collaborateur> subalternes = new ArrayList<>();
+
+		matricules.forEach(u -> {
+			Collaborateur col = collabs.stream().filter(c -> c.getMatricule().equals(u))
+			.findFirst().get();
+
+			subalternes.add(col);
+		});
+		
+		return subalternes;
+	}
+	
 }
