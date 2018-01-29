@@ -11,6 +11,7 @@ import dev.gda.api.entite.AbsenceStatut;
 import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 import dev.gda.api.repository.AbsenceRepository;
+import dev.gda.api.repository.CollaborateurRepository;
 
 @Service
 public class TraitementNuitService{
@@ -18,6 +19,12 @@ public class TraitementNuitService{
 	@Autowired
 	private AbsenceRepository absenceRepository;
 	
+	@Autowired
+	private CollaborateurRepository collaborateurRepository;
+	
+	@Autowired
+	private EmailService emailService;
+
 	@Scheduled(cron = "0 0 0 * * *", zone="CET")
 	public void faireTraitement() {
 		
@@ -61,6 +68,12 @@ public class TraitementNuitService{
 				absence.setStatut(AbsenceStatut.REJETEE);
 			}else {
 				//TODO envoi de mail au manager
+				Collaborateur manager = this.collaborateurRepository.findManagerMatricule(absence.getCollaborateur().getMatricule())
+											.map(collaborateurRepository::findOne).get();
+				
+				this.emailService.sendSimpleMessage(manager.getEmail(),
+							"Nouvelle Demande d'Absence ",
+							absence.getCollaborateur().getPrenom() + ' '+ absence.getCollaborateur().getNom() + " a une demande en attente de validation");
 			}
 		}
 	}

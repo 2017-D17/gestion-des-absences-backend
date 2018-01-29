@@ -1,5 +1,6 @@
 package dev.gda.api.entite;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -49,7 +50,7 @@ public class Collaborateur {
 	private List<RoleType> roles;
 
 	@OneToMany
-	List<Collaborateur> subalternes;
+	List<Collaborateur> subalternes = new ArrayList<>();
 	
 	public Collaborateur() {
 		super();
