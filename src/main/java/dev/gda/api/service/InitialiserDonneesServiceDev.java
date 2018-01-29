@@ -4,10 +4,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -22,6 +26,7 @@ import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceStatut;
 import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
+import dev.gda.api.entite.RoleType;
 import dev.gda.api.modelview.CollaborateurView;
 import dev.gda.api.repository.CollaborateurRepository;
 import dev.gda.api.util.ModelViewUtils;
@@ -29,6 +34,8 @@ import dev.gda.api.util.ModelViewUtils;
 @Service
 public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	
 	@PersistenceContext
 	EntityManager em;
 	
@@ -61,6 +68,8 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 	@Transactional
 	public void initialiser() {
 		
+		LOG.info("Retrieve the employees from "+ server);
+		
 		List<CollaborateurView> utilisateurs = Arrays.asList(getCollaborateursFromServeur("/collaborateurs"));	
 		utilisateurs.stream()
 			.map( ModelViewUtils::CollaborateurViewToCollaborateur)
@@ -85,6 +94,8 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		c.setConges(c.getConges() - 1);
 		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c);
 		em.persist(c);
+		
+		setDefaultAdmin(collabsFromDb);
 		
 	}
 	
@@ -133,6 +144,24 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		});
 		
 		return subalternes;
+	}
+	
+	
+	/**
+	 * Cette méthode permet d'attribuer le role admin à un manager
+	 * 
+	 * @param collaborateurs la liste des collaborateurs
+	 */
+	private void setDefaultAdmin(List<Collaborateur> collaborateurs) {
+		Optional<Collaborateur> aManager = collaborateurs.stream().filter(col -> col.getRoles().contains(RoleType.ROLE_MANAGER)).findFirst();
+		
+		if(aManager.isPresent()) {
+			Collaborateur c = aManager.get();
+			LOG.info("Set " + c.getPrenom() + ' ' + c.getNom() + " as default admin");
+			List<RoleType> roles = new ArrayList<RoleType>(c.getRoles());
+			roles.add(RoleType.ROLE_ADMIN);
+			c.setRoles(roles);
+		}
 	}
 	
 }
