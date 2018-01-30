@@ -75,8 +75,6 @@ public class TraitementNuitService{
 				Collaborateur manager = this.collaborateurRepository.findManagerMatricule(absence.getCollaborateur().getMatricule())
 											.map(collaborateurRepository::findOne).get();
 				
-				LOG.info("Envoi du mail à "+ manager.getPrenom() +' '+ manager.getNom()+ "au "+ manager.getEmail());
-				
 				this.emailService.sendSimpleMessage(manager.getEmail(),
 							"Nouvelle Demande d'Absence ",
 							absence.getCollaborateur().getPrenom() + ' '+ absence.getCollaborateur().getNom() + " a une demande en attente de validation");

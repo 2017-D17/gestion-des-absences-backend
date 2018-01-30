@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile("pro")
+@Profile("default")
 public class EmailServiceDev implements EmailService {
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());

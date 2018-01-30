@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
@@ -27,6 +25,7 @@ import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 import dev.gda.api.entite.RoleType;
 import dev.gda.api.modelview.CollaborateurView;
+import dev.gda.api.repository.AbsenceRepository;
 import dev.gda.api.repository.CollaborateurRepository;
 import dev.gda.api.util.ModelViewUtils;
 
@@ -35,8 +34,8 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
-	@PersistenceContext
-	EntityManager em;
+	@Autowired
+	private AbsenceRepository absenceRepository;
 	
 	@Autowired
 	private CollaborateurRepository collaborateurRepository;
@@ -74,7 +73,7 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		List<CollaborateurView> utilisateurs = Arrays.asList(getCollaborateursFromServeur("/collaborateurs"));	
 		utilisateurs.stream()
 			.map( ModelViewUtils::CollaborateurViewToCollaborateur)
-			.forEach(em::persist);
+			.forEach(this.collaborateurRepository::save);
 		
 		List<Collaborateur> collabsFromDb = collaborateurRepository.findAll();
 		
@@ -94,14 +93,8 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		addAbsence(LocalDate.of(2018, 01, 28),LocalDate.of(2018, 01, 28), AbsenceStatut.INITIALE, c);
 		c.setConges(c.getConges() - 1);
 		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c);
-		em.persist(c);
-		
-		
-		Optional<Collaborateur> f = collabsFromDb.stream().filter(col -> col.getMatricule().equals("bd540e65")).findFirst();
-		if(f.isPresent()) {
-			f.get().setEmail("formation.jenkins@gmail.com");
-		}
-		
+		this.collaborateurRepository.save(c);
+				
 		setDefaultAdmin(collabsFromDb);
 		
 	}
@@ -113,7 +106,7 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		a.setType(AbsenceType.CONGE_PAYE);
 		a.setStatut(statut);
 		a.setCollaborateur(collab);
-		em.persist(a);
+		this.absenceRepository.save(a);
 	}
 	
 
