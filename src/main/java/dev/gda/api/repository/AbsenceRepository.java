@@ -6,12 +6,14 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceStatut;
 import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 
+@CrossOrigin
 public interface AbsenceRepository extends JpaRepository<Absence, Integer> {
 
 	List<Absence> findByCollaborateur(Collaborateur collaborateur);
