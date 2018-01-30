@@ -42,12 +42,11 @@ public class Collaborateur {
 	private Integer rttEmployeur;
 	
 	@JsonIgnore
-	@Column(name="actif")
 	private Boolean actif;
 	
 	@ElementCollection
 	@Enumerated(EnumType.STRING)
-	private List<RoleType> roles;
+	private List<RoleType> roles = new ArrayList<>();
 
 	@OneToMany
 	List<Collaborateur> subalternes = new ArrayList<>();

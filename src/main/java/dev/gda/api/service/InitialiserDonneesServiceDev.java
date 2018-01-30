@@ -28,6 +28,7 @@ import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 import dev.gda.api.entite.RoleType;
 import dev.gda.api.modelview.CollaborateurView;
+import dev.gda.api.repository.AbsenceRepository;
 import dev.gda.api.repository.CollaborateurRepository;
 import dev.gda.api.util.ModelViewUtils;
 
@@ -36,12 +37,15 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
-	@PersistenceContext
-	EntityManager em;
+	//@PersistenceContext
+	//EntityManager em;
 	
 	@Autowired
 	private CollaborateurRepository collaborateurRepository;
 
+	@Autowired
+	private AbsenceRepository absenceRepository;
+	
 	@Value("${gda.server.users.url}")
 	private String server;
 		
@@ -73,7 +77,7 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		List<CollaborateurView> utilisateurs = Arrays.asList(getCollaborateursFromServeur("/collaborateurs"));	
 		utilisateurs.stream()
 			.map( ModelViewUtils::CollaborateurViewToCollaborateur)
-			.forEach(em::persist);
+			.forEach(collaborateurRepository::save);
 		
 		List<Collaborateur> collabsFromDb = collaborateurRepository.findAll();
 		
@@ -85,6 +89,8 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 						.findFirst().get();
 
 				col.setSubalternes(getAllCollaborateurSubalternes(u.getSubalternes(), collabsFromDb));
+			} else {
+				
 			}
 		});
 				
@@ -93,9 +99,75 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		addAbsence(LocalDate.of(2018, 01, 28),LocalDate.of(2018, 01, 28), AbsenceStatut.INITIALE, c);
 		c.setConges(c.getConges() - 1);
 		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c);
-		em.persist(c);
+		//em.persist(c);
+		collaborateurRepository.save(c);
+
 		
 		setDefaultAdmin(collabsFromDb);
+		
+		Collaborateur c1 = collabsFromDb.get(3);
+		addAbsence(LocalDate.of(2018, 01, 30),LocalDate.of(2018, 01, 30), AbsenceStatut.INITIALE, c1);
+		addAbsence(LocalDate.of(2018, 02, 05),LocalDate.of(2018, 02, 25), AbsenceStatut.INITIALE, c1);
+		c1.setConges(c1.getConges() - 1);
+		addAbsence(LocalDate.of(2018, 03, 28),LocalDate.of(2018, 03, 28), AbsenceStatut.EN_ATTENTE_VALIDATION, c1);
+		
+		
+		addAbsence(LocalDate.of(2018, 01, 30),LocalDate.of(2018, 01, 30), AbsenceStatut.INITIALE, c1);
+		addAbsence(LocalDate.of(2018, 02, 05),LocalDate.of(2018, 02, 25), AbsenceStatut.INITIALE, c1);
+		c1.setConges(c1.getConges() - 1);
+		addAbsence(LocalDate.of(2018, 03, 28),LocalDate.of(2018, 03, 28), AbsenceStatut.EN_ATTENTE_VALIDATION, c1);
+		
+		collaborateurRepository.save(c1);
+		
+		Collaborateur c2 = collabsFromDb.get(3);
+		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), AbsenceStatut.INITIALE, c2);
+		addAbsence(LocalDate.of(2018, 01, 29),LocalDate.of(2018, 01, 29), AbsenceStatut.INITIALE, c2);
+		c2.setConges(c2.getConges() - 1);
+		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c2);
+		
+		collaborateurRepository.save(c2);
+		
+		
+		Collaborateur c3 = collabsFromDb.get(4);
+		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), AbsenceStatut.INITIALE, c3);
+		addAbsence(LocalDate.of(2018, 01, 29),LocalDate.of(2018, 01, 29), AbsenceStatut.INITIALE, c3);
+		c3.setConges(c3.getConges() - 1);
+		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c3);
+		
+		collaborateurRepository.save(c3);
+		
+		Collaborateur c4 = collabsFromDb.get(5);
+		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), AbsenceStatut.INITIALE, c4);
+		addAbsence(LocalDate.of(2018, 01, 29),LocalDate.of(2018, 01, 29), AbsenceStatut.INITIALE, c4);
+		c4.setConges(c4.getConges() - 1);
+		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c4);
+		
+		collaborateurRepository.save(c4);
+		
+		Collaborateur c5 = collabsFromDb.get(6);
+		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), AbsenceStatut.INITIALE, c5);
+		addAbsence(LocalDate.of(2018, 01, 29),LocalDate.of(2018, 01, 29), AbsenceStatut.INITIALE, c5);
+		c5.setConges(c5.getConges() - 1);
+		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c5);
+		
+		collaborateurRepository.save(c5);
+		
+		Collaborateur c6 = collabsFromDb.get(7);
+		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), AbsenceStatut.INITIALE, c6);
+		addAbsence(LocalDate.of(2018, 01, 29),LocalDate.of(2018, 01, 29), AbsenceStatut.INITIALE, c6);
+		c6.setConges(c6.getConges() - 1);
+		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c6);
+		
+		collaborateurRepository.save(c6);
+		
+		Collaborateur c7 = collabsFromDb.get(8);
+		addAbsence(LocalDate.of(2018, 01, 19),LocalDate.of(2018, 01, 19), AbsenceStatut.INITIALE, c7);
+		addAbsence(LocalDate.of(2018, 01, 29),LocalDate.of(2018, 01, 29), AbsenceStatut.INITIALE, c7);
+		c7.setConges(c7.getConges() - 1);
+		addAbsence(LocalDate.of(2018, 02, 28),LocalDate.of(2018, 03, 06), AbsenceStatut.EN_ATTENTE_VALIDATION, c7);
+		
+		collaborateurRepository.save(c7);
+
 		
 	}
 	
@@ -106,7 +178,7 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		a.setType(AbsenceType.CONGE_PAYE);
 		a.setStatut(statut);
 		a.setCollaborateur(collab);
-		em.persist(a);
+		absenceRepository.save(a);
 	}
 	
 

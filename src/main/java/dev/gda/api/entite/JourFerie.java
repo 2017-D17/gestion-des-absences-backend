@@ -1,6 +1,8 @@
 package dev.gda.api.entite;
 
 import java.time.LocalDate;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -28,6 +30,7 @@ public class JourFerie {
   private LocalDate date;
   @NotNull
   private JourFerieType type;
+  @Column
   private String commentaire;
   
   public JourFerie() {
