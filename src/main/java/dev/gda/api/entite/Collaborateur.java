@@ -47,10 +47,11 @@ public class Collaborateur {
 	
 	@ElementCollection
 	@Enumerated(EnumType.STRING)
-	private List<RoleType> roles;
+	private List<RoleType> roles = new ArrayList<>();
 
 	@OneToMany
 	List<Collaborateur> subalternes = new ArrayList<>();
+
 	
 	public Collaborateur() {
 		super();

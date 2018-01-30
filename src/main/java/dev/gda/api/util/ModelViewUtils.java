@@ -66,6 +66,11 @@ public class ModelViewUtils {
 		return view;
 	}
 	
+	/**
+	 * Cette méthode permet de mapper une entité Absence en un model AbsenceView
+	 * @param absence l'absence à mapper
+	 * @return 
+	 */
 	public static AbsenceView AbsenceToAbsenceView(Absence absence) {
 		AbsenceView view = new AbsenceView();
 		view.setId(absence.getId());

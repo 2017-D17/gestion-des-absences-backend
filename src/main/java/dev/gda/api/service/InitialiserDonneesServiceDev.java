@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
@@ -44,7 +43,7 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 
 	@Value("${gda.server.users.url}")
 	private String server;
-		
+	
 	private RestTemplate rest;
 	private HttpHeaders headers;
 	private HttpStatus status;
@@ -56,9 +55,10 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		headers.add("Accept", "*/*");
 	}
 
+
 	public CollaborateurView[] getCollaborateursFromServeur(String uri) {
+
 	    HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
-	    
 	    ResponseEntity<CollaborateurView[]> responseEntity = rest.exchange(server + uri, HttpMethod.GET, requestEntity,CollaborateurView[].class);
 	    this.setStatus(responseEntity.getStatusCode());
 	    return responseEntity.getBody();
@@ -70,6 +70,7 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		
 		LOG.info("Retrieve the employees from "+ server);
 		
+
 		List<CollaborateurView> utilisateurs = Arrays.asList(getCollaborateursFromServeur("/collaborateurs"));	
 		utilisateurs.stream()
 			.map( ModelViewUtils::CollaborateurViewToCollaborateur)
@@ -94,6 +95,12 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 		c.setConges(c.getConges() - 1);
 		addAbsence(LocalDate.of(2018, 03, 19),LocalDate.of(2018, 03, 19), AbsenceStatut.EN_ATTENTE_VALIDATION, c);
 		em.persist(c);
+		
+		
+		Optional<Collaborateur> f = collabsFromDb.stream().filter(col -> col.getMatricule().equals("bd540e65")).findFirst();
+		if(f.isPresent()) {
+			f.get().setEmail("formation.jenkins@gmail.com");
+		}
 		
 		setDefaultAdmin(collabsFromDb);
 		
@@ -153,7 +160,7 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 	 * @param collaborateurs la liste des collaborateurs
 	 */
 	private void setDefaultAdmin(List<Collaborateur> collaborateurs) {
-		Optional<Collaborateur> aManager = collaborateurs.stream().filter(col -> col.getRoles().contains(RoleType.ROLE_MANAGER)).findFirst();
+		Optional<Collaborateur> aManager = collaborateurs.stream().filter(col -> col.getRoles().contains(RoleType.ROLE_USER) && !col.getRoles().contains(RoleType.ROLE_MANAGER)).findAny();
 		
 		if(aManager.isPresent()) {
 			Collaborateur c = aManager.get();
@@ -163,5 +170,4 @@ public class InitialiserDonneesServiceDev implements InitialiserDonneesService {
 			c.setRoles(roles);
 		}
 	}
-	
 }

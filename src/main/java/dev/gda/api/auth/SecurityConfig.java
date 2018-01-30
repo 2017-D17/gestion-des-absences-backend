@@ -65,3 +65,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .cacheControl();
     }
 }
+

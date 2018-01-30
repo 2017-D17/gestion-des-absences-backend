@@ -1,9 +1,11 @@
-package dev.gda.api.controller;
+ package dev.gda.api.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +13,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import dev.gda.api.auth.AuthCredentials;
 import dev.gda.api.entite.Absence;
-import dev.gda.api.entite.AbsenceStatut;
 import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
+import dev.gda.api.entite.RoleType;
+import dev.gda.api.modelview.AbsenceView;
+import dev.gda.api.modelview.AuthenticationResponse;
+import dev.gda.api.repository.CollaborateurRepository;
+import dev.gda.api.util.ModelViewUtils;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -26,40 +34,72 @@ public class AbsenceControllerIntegrationTest {
 
 	@Autowired
 	private TestRestTemplate restTemplate;
-
+	
+	@Autowired
+	private CollaborateurRepository collaborateurRepository;
+	
+	private Collaborateur jean;
+	
+	
+	@Before
+	public void setup() {
+		jean = new Collaborateur();
+	    jean.setMatricule("UUID3");
+	    jean.setEmail("jean@mail.com");
+	    jean.setPassword("$2a$10$Qse7HJSORoF8Q5lmOO/6OOh1IKhLVqV4BnOaz1E1U//2rH4vPyO9q");
+	    jean.getRoles().add(RoleType.ROLE_USER);
+	    this.collaborateurRepository.save(jean);
+	}
+	
+	@After
+	public void tearDown() {
+	    collaborateurRepository.delete(jean);
+	}
+	
+	
 	@Test
 	public void test_scenario_crud_lister_absences() {
+
+		// Authentification
+		AuthCredentials authCredentials = new AuthCredentials();
+		authCredentials.setEmail(jean.getEmail());
+		authCredentials.setPassword("password");
+		AuthenticationResponse auth = this.restTemplate.postForObject("/login", authCredentials, AuthenticationResponse.class);
+		assertThat(auth).isNotNull();
+		assertThat(auth.getToken()).isNotNull();
+		assertThat(auth.getCollaborateur().getEmail()).isEqualTo(authCredentials.getEmail());
+		
+		HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer "+ auth.getToken());
+
 
 		// insertion
 		Absence ab = new Absence();
 		ab.setDateDebut(LocalDate.now().plusDays(2));
 		ab.setDateFin(LocalDate.now().plusDays(3));
 		ab.setType(AbsenceType.RTT);
-
-		Collaborateur c = new Collaborateur();
-		// TODO (me) rendre le test indépendant
-		c.setMatricule("8b2d3ac7");
-
-		ab.setCollaborateur(c);
-
-		Absence abr = this.restTemplate.postForObject("/absences", ab, Absence.class);
+		
+		HttpEntity<Absence> entity = new HttpEntity<Absence>(ab, headers);
+		AbsenceView abr = this.restTemplate.exchange("/absences", HttpMethod.POST, entity, AbsenceView.class).getBody();
+		
 		assertThat(abr).isNotNull();
 		assertThat(abr.getId()).isNotNull();
 		assertThat(abr.getMotif()).isEqualTo(ab.getMotif());
 
 		// lister pour vérifier l'insertion
-		ResponseEntity<Absence[]> re = this.restTemplate.getForEntity("/absences/8b2d3ac7", Absence[].class);
-		Absence[] abs = re.getBody();
-		assertThat(abs.length).isEqualTo(4);
+		AbsenceView[] abs = lister("/absences/" + jean.getMatricule(), headers);
+		assertThat(abs.length).isEqualTo(1);
 
-		// modification
+
+
+		// modification		
 		abr.setMotif("un nouveau motif");
-
-		HttpEntity<Absence> requestEntity = new HttpEntity<Absence>(abr);
-
-		ResponseEntity<Absence> rep = this.restTemplate.exchange("/absences/" + abr.getId(), HttpMethod.PUT,
-				requestEntity, Absence.class);
-		Absence abr2 = rep.getBody();
+		Absence a = AbsenceViewToAbsence(abr);
+		
+		HttpEntity<Absence> requestEntity = new HttpEntity<Absence>(a, headers);
+		ResponseEntity<AbsenceView> rep = this.restTemplate.exchange("/absences/" + abr.getId(), HttpMethod.PUT,
+				requestEntity, AbsenceView.class);
+		AbsenceView abr2 = rep.getBody();
 		// vérification modification
 		assertThat(abr2).isNotNull();
 		assertThat(abr2.getId()).isNotNull();
@@ -67,34 +107,36 @@ public class AbsenceControllerIntegrationTest {
 		assertThat(abr2.getMotif()).isEqualTo(abr.getMotif());
 
 		// lister pour vérifier modification
-		ResponseEntity<Absence[]> re2 = this.restTemplate.getForEntity("/absences/8b2d3ac7", Absence[].class);
-		Absence[] abs2 = re2.getBody();
-		assertThat(abs2.length).isEqualTo(4);
-
-		// modification statut
-		abr2.setStatut(AbsenceStatut.VALIDEE);
-	
-		Absence abr3 = this.restTemplate.postForObject("/absences/" + abr2.getId() + "?_method=patch", abr2, Absence.class);
-		// vérification modification statut
-		assertThat(abr3).isNotNull();
-		assertThat(abr3.getId()).isNotNull();
-		assertThat(abr3.getId()).isEqualTo(abr2.getId());
-		assertThat(abr3.getStatut()).isEqualTo(abr2.getStatut());
-
-		// lister pour vérifier modification statut
-		ResponseEntity<Absence[]> re3 = this.restTemplate.getForEntity("/absences/8b2d3ac7", Absence[].class);
-		Absence[] abs3 = re3.getBody();
-		assertThat(abs3.length).isEqualTo(4);
+		AbsenceView[] abs2 = lister("/absences/" + jean.getMatricule(), headers);
+		assertThat(abs2.length).isEqualTo(1);
 		
 		
-		this.restTemplate.delete("/absences/" + abr2.getId());
+		// suppression
+		HttpEntity<AbsenceView> entity2 = new HttpEntity<AbsenceView>(headers);
+		this.restTemplate.exchange("/absences/" + abr2.getId(), HttpMethod.DELETE, entity2, AbsenceView.class);
 		
 		// lister pour vérifier suppression
-		ResponseEntity<Absence[]> re4 = this.restTemplate.getForEntity("/absences/8b2d3ac7", Absence[].class);
-		Absence[] abs4 = re4.getBody();
-		assertThat(abs4.length).isEqualTo(3);
-		
-		
-		
+		AbsenceView[] abs4 = lister("/absences/" + jean.getMatricule(), headers);
+		assertThat(abs4.length).isEqualTo(0);
+
 	}
+		
+	private AbsenceView[] lister(String url, HttpHeaders headers) {
+		HttpEntity<AbsenceView> entity = new HttpEntity<AbsenceView>(headers);
+		ResponseEntity<AbsenceView[]> response = this.restTemplate.exchange(url, HttpMethod.GET, entity, AbsenceView[].class);
+		return response.getBody();	
+	}
+	
+	public Absence AbsenceViewToAbsence(AbsenceView absenceView) {
+		Absence absence = new Absence();
+		absence.setId(absenceView.getId());
+		absence.setDateDebut(absenceView.getDateDebut());
+		absence.setDateFin(absenceView.getDateFin());
+		absence.setMotif(absenceView.getMotif());
+		absence.setStatut(absenceView.getStatut());
+		absence.setType(absenceView.getType());
+		absence.setCollaborateur(ModelViewUtils.CollaborateurViewToCollaborateur(absenceView.getCollaborateur()));
+		return absence;
+	}
+	
 }

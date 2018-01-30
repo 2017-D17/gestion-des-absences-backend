@@ -10,7 +10,7 @@ import dev.gda.api.entite.Collaborateur;
 
 public interface CollaborateurRepository extends JpaRepository<Collaborateur, String> {
 	Optional<Collaborateur> findByEmail(String email);
-		
+	
 	@Query(value="select COLLABORATEUR_MATRICULE from COLLABORATEUR_SUBALTERNES where SUBALTERNES_MATRICULE=:matricule", nativeQuery=true)
 	Optional<String> findManagerMatricule(@Param("matricule") String matricule);
 }

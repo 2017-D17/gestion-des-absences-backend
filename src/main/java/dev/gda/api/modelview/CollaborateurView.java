@@ -1,5 +1,6 @@
 package dev.gda.api.modelview;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,9 +18,13 @@ public class CollaborateurView{
 	private String departement;
 	private Integer conges;
 	private Integer rtt;
-	private List<RoleType> roles;
-	private List<String> subalternes;
+	private List<RoleType> roles = new ArrayList<RoleType>();
+	private List<String> subalternes = new ArrayList<String>();
 
+	public CollaborateurView() {
+		super();
+	}
+	
 	/**
 	 * @return the matricule
 	 */

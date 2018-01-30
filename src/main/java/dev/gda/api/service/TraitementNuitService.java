@@ -2,6 +2,8 @@ package dev.gda.api.service;
 
 import java.time.temporal.ChronoUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ import dev.gda.api.repository.CollaborateurRepository;
 @Service
 public class TraitementNuitService{
 	
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	
 	@Autowired
 	private AbsenceRepository absenceRepository;
 	
@@ -24,17 +28,17 @@ public class TraitementNuitService{
 	
 	@Autowired
 	private EmailService emailService;
-
-	@Scheduled(cron = "0 0 0 * * *", zone="CET")
-	public void faireTraitement() {
 		
+	@Scheduled(cron = "${gda.traitement.nuit.cron:0 0 0 * * *}", zone="CET")
+	public void faireTraitement() {
 		this.absenceRepository.findByStatutOrderByIdAsc(AbsenceStatut.INITIALE).stream().forEach(abs -> {
 			
-			if(abs.getType().equals(AbsenceType.RTT_EMPLOYEUR)) {
 
+			if(abs.getType().equals(AbsenceType.RTT_EMPLOYEUR)) {
+				LOG.info("Traitement de la demande rtt employeur pour " + abs.getCollaborateur().getPrenom() +' '+ abs.getCollaborateur().getNom());
 				traitementAbsenceTypeRttEmployeur(abs);				
 			}else {
-				
+				LOG.info("Traitement de la demande faite par "+ abs.getCollaborateur().getPrenom() +' '+ abs.getCollaborateur().getNom());
 				traitementAbsenceTypeAutre(abs);
 			}
 			
@@ -67,9 +71,11 @@ public class TraitementNuitService{
 			if(absence.getStatut().equals(AbsenceStatut.INITIALE) ) {
 				absence.setStatut(AbsenceStatut.REJETEE);
 			}else {
-				//TODO envoi de mail au manager
+
 				Collaborateur manager = this.collaborateurRepository.findManagerMatricule(absence.getCollaborateur().getMatricule())
 											.map(collaborateurRepository::findOne).get();
+				
+				LOG.info("Envoi du mail à "+ manager.getPrenom() +' '+ manager.getNom()+ "au "+ manager.getEmail());
 				
 				this.emailService.sendSimpleMessage(manager.getEmail(),
 							"Nouvelle Demande d'Absence ",

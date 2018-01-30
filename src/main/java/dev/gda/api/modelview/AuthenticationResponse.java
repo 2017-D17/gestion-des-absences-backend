@@ -6,6 +6,10 @@ public class AuthenticationResponse {
 	private CollaborateurView collaborateur;
 	
 	
+	public AuthenticationResponse() {
+		super();
+	}
+	
 	public AuthenticationResponse(String token, CollaborateurView collaborateur) {
 		super();
 		this.token = token;

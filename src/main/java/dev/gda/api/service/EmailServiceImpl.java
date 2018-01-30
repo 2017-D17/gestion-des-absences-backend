@@ -12,7 +12,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile("PRODUCTION")
+//@Profile("production")
 public class EmailServiceImpl implements EmailService {
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
@@ -36,11 +36,6 @@ public class EmailServiceImpl implements EmailService {
         
     }
 	
-	@Bean
-	public JavaMailSender mailSender() {
-		return new JavaMailSenderImpl();
-	}
-
 
 
 

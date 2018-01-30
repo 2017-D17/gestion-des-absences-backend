@@ -33,6 +33,7 @@ import dev.gda.api.entite.Collaborateur;
 import dev.gda.api.exception.AbsenceException;
 import dev.gda.api.exception.AbsenceNotFoundException;
 import dev.gda.api.modelview.AbsenceView;
+import dev.gda.api.exception.CollaborateurNotFoundException;
 import dev.gda.api.repository.AbsenceRepository;
 import dev.gda.api.repository.CollaborateurRepository;
 import dev.gda.api.util.ModelViewUtils;
@@ -66,21 +67,22 @@ public class AbsenceController {
 	 * @return La liste des demandes d'absence ou null
 	 * 
 	 * @throws AbsenceException
+	 * @throws CollaborateurNotFoundException 
 	 */
 	@GetMapping("/{matricule}")
 	@Secured("ROLE_USER")
-	public List<AbsenceView> listerAbsenceParCollaborateur(@PathVariable Optional<String> matricule) throws AbsenceException {
+	public List<AbsenceView> listerAbsenceParCollaborateur(@PathVariable Optional<String> matricule) throws AbsenceException, CollaborateurNotFoundException {
+
 
 	  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
 		Collaborateur c = this.collaborateurRepository.findByEmail(auth.getName())
-				.orElseThrow(() -> new AbsenceException("Employee not found"));
+				.orElseThrow(() -> new CollaborateurNotFoundException("Collaborateur not found"));
 			
 		return Optional.of(c)
 				.map(this.absenceRepository::findByCollaborateur)
 				.map(abs ->  abs.stream().map(ModelViewUtils::AbsenceToAbsenceView).collect(Collectors.toList()))
 				.orElseGet(() -> new ArrayList<AbsenceView>());
-
 	}
 
 	/**
@@ -91,30 +93,31 @@ public class AbsenceController {
 	 * @param statut le statut de l'absence
 	 * @return La liste des demandes d'absence ou null
 	 * @throws AbsenceException 
+	 * @throws CollaborateurNotFoundException 
 	 * 
 	 */
 	@GetMapping
 	@Secured("ROLE_MANAGER")
-	public List<AbsenceView> listerAbsence(@RequestParam(value = "statut", required = false) Optional<AbsenceStatut> statut) throws AbsenceException {
+	public List<AbsenceView> listerAbsence(@RequestParam(value = "statut", required = false) Optional<AbsenceStatut> statut) throws AbsenceException, CollaborateurNotFoundException {
 
 		List<AbsenceView> absences = this.absenceRepository.findAll().stream().map(ModelViewUtils::AbsenceToAbsenceView).collect(Collectors.toList());
 		
 		if (statut.isPresent()) {
-		  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 	    
-	    Collaborateur manager = this.collaborateurRepository.findByEmail(auth.getName())
-	        .orElseThrow(() -> new AbsenceException("Employee not found"));
+			Collaborateur manager = this.collaborateurRepository.findByEmail(auth.getName())
+					.orElseThrow(() -> new CollaborateurNotFoundException("Collaborateur not found"));
 
-	    if(!manager.getSubalternes().isEmpty()) {
-	      List<AbsenceView> absencesSub = new ArrayList<>();
-	      manager.getSubalternes().forEach( sub -> {
-	        List<AbsenceView> abs = getAllSubalterneAbsencesByStatut(sub, absences, statut.get());
-	        if(!abs.isEmpty()) {
-	          absencesSub.addAll(abs);
-	        }
-	      });
-	      return absencesSub;
-	    } 
+			if (!manager.getSubalternes().isEmpty()) {
+				List<AbsenceView> absencesSub = new ArrayList<>();
+				manager.getSubalternes().forEach(sub -> {
+					List<AbsenceView> abs = getAllSubalterneAbsencesByStatut(sub, absences, statut.get());
+					if (!abs.isEmpty()) {
+						absencesSub.addAll(abs);
+					}
+				});
+				return absencesSub;
+			} 
 		}
 
 		return absences;
@@ -142,18 +145,19 @@ public class AbsenceController {
 	 * @param absence l'absence a ajouté
 	 * 
 	 * @throws AbsenceException
+	 * @throws CollaborateurNotFoundException 
 	 */
 	@PostMapping
 	@Secured("ROLE_USER")
 	@ResponseStatus(HttpStatus.CREATED)
-	public AbsenceView ajouterAbsence(@RequestBody @Valid Absence absence) throws AbsenceException {
+	public AbsenceView ajouterAbsence(@RequestBody @Valid Absence absence) throws AbsenceException, CollaborateurNotFoundException {
 
 		if (absenceValidator.isValid(absence)) {
 
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			
 			Collaborateur c = this.collaborateurRepository.findByEmail(auth.getName())
-					.orElseThrow(() -> new AbsenceException("Employee not found"));
+					.orElseThrow(() -> new CollaborateurNotFoundException("Collaborateur not found"));
 
 			absence.setCollaborateur(c);
 
@@ -225,17 +229,19 @@ public class AbsenceController {
 	 * Une exception est levée dans le cas où l'id est null ou vide
 	 * 
 	 * @param absence l'absence a ajouté
-	 * @throws Exception
+	 * @throws CollaborateurNotFoundException 
+	 * @throws AbsenceException
 	 */
 	@PatchMapping("/{absenceId}")
 	@Secured("ROLE_MANAGER")
-	public AbsenceView modifierStatutAbsence(@PathVariable Optional<Integer> absenceId, @RequestBody Absence absence) throws AbsenceException {
+	public AbsenceView modifierStatutAbsence(@PathVariable Optional<Integer> absenceId, @RequestBody Absence absence) throws AbsenceException, CollaborateurNotFoundException {
+
 		checkAbsenceForModifierStatut(absence);
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		Collaborateur manager = this.collaborateurRepository.findByEmail(auth.getName())
-		  .orElseThrow(() -> new AbsenceException("Employee not found"));
-		
+		  .orElseThrow(() -> new CollaborateurNotFoundException("Collaborateur not found"));
+
 		Absence absenceFromRepo = absenceId.map(this.absenceRepository::findOne).orElseThrow(() -> new AbsenceNotFoundException(ABSENCE_NOT_FOUND));
 		
 		if(!manager.getSubalternes().contains(absenceFromRepo.getCollaborateur())) {
