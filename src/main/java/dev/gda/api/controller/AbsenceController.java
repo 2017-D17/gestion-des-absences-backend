@@ -1,10 +1,12 @@
 package dev.gda.api.controller;
 
+import static dev.gda.api.util.ModelViewUtils.absence2AbsenceView;
+import static java.util.stream.Collectors.toList;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -32,11 +34,10 @@ import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 import dev.gda.api.exception.AbsenceException;
 import dev.gda.api.exception.AbsenceNotFoundException;
-import dev.gda.api.modelview.AbsenceView;
 import dev.gda.api.exception.CollaborateurNotFoundException;
+import dev.gda.api.modelview.AbsenceView;
 import dev.gda.api.repository.AbsenceRepository;
 import dev.gda.api.repository.CollaborateurRepository;
-import dev.gda.api.util.ModelViewUtils;
 
 /**
  * Controlleur de la ressource absence
@@ -81,7 +82,7 @@ public class AbsenceController {
 			
 		return Optional.of(c)
 				.map(this.absenceRepository::findByCollaborateur)
-				.map(abs ->  abs.stream().map(ModelViewUtils::AbsenceToAbsenceView).collect(Collectors.toList()))
+				.map(abs ->  abs.stream().map(absence2AbsenceView).collect(toList()))
 				.orElseGet(() -> new ArrayList<AbsenceView>());
 	}
 
@@ -100,7 +101,7 @@ public class AbsenceController {
 	@Secured("ROLE_MANAGER")
 	public List<AbsenceView> listerAbsence(@RequestParam(value = "statut", required = false) Optional<AbsenceStatut> statut) throws AbsenceException, CollaborateurNotFoundException {
 
-		List<AbsenceView> absences = this.absenceRepository.findAll().stream().map(ModelViewUtils::AbsenceToAbsenceView).collect(Collectors.toList());
+		List<AbsenceView> absences = this.absenceRepository.findAll().stream().map(absence2AbsenceView).collect(toList());
 		
 		if (statut.isPresent()) {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -135,7 +136,7 @@ public class AbsenceController {
 	private List<AbsenceView> getAllSubalterneAbsencesByStatut(Collaborateur subalterne, List<AbsenceView> absences, AbsenceStatut statut){
 	  return absences.stream()
   	  .filter(a -> a.getStatut().equals(statut) && a.getCollaborateur().getMatricule().equals(subalterne.getMatricule()))
-  	  .collect(Collectors.toList());
+  	  .collect(toList());
 	}
 	
 
@@ -168,7 +169,7 @@ public class AbsenceController {
 
 			absence.setStatut(AbsenceStatut.INITIALE);
 
-			return ModelViewUtils.AbsenceToAbsenceView(this.absenceRepository.save(absence));
+			return absence2AbsenceView.apply(this.absenceRepository.save(absence));
 		}
 		return null;
 	}
@@ -215,7 +216,7 @@ public class AbsenceController {
 			absenceToModify.setType(absence.getType());
 			absenceToModify.setStatut(AbsenceStatut.INITIALE);
 
-			return ModelViewUtils.AbsenceToAbsenceView(this.absenceRepository.save(absenceToModify));
+			return absence2AbsenceView.apply(this.absenceRepository.save(absenceToModify));
 		}
 
 		return null;
@@ -249,7 +250,7 @@ public class AbsenceController {
 		}
 		
 		absenceFromRepo.setStatut(absence.getStatut());
-		return ModelViewUtils.AbsenceToAbsenceView(this.absenceRepository.save(absenceFromRepo));
+		return absence2AbsenceView.apply(this.absenceRepository.save(absenceFromRepo));
 		
 
 	}

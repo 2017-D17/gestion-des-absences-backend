@@ -1,17 +1,22 @@
 package dev.gda.api.repository;
 
+import static java.util.Arrays.asList;
+
 import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import dev.gda.api.entite.Collaborateur;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace=Replace.NONE)
 @RunWith(SpringRunner.class)
 public class CollaborateurRepositoryTest {
 
@@ -32,7 +37,7 @@ public class CollaborateurRepositoryTest {
 	  albert.setNom("albert");
 	  albert.setPrenom("sereveille");
     this.collaborateurRepository.save(albert);
-    jean.getSubalternes().add(albert);
+    jean.setSubalternes(asList(albert));
     this.collaborateurRepository.save(jean);
   }
   

@@ -1,12 +1,6 @@
 package dev.gda.api.controller;
 
-import dev.gda.api.auth.AuthCredentials;
-import dev.gda.api.entite.Collaborateur;
-import dev.gda.api.exception.AbsenceException;
-import dev.gda.api.modelview.AuthenticationResponse;
-import dev.gda.api.repository.CollaborateurRepository;
-import dev.gda.api.util.JwtTokenUtil;
-import dev.gda.api.util.ModelViewUtils;
+import static dev.gda.api.util.ModelViewUtils.collaborateur2CollaborateurView;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +13,13 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import dev.gda.api.auth.AuthCredentials;
+import dev.gda.api.entite.Collaborateur;
+import dev.gda.api.exception.AbsenceException;
+import dev.gda.api.modelview.AuthenticationResponse;
+import dev.gda.api.repository.CollaborateurRepository;
+import dev.gda.api.util.JwtTokenUtil;
 
 @RestController
 @CrossOrigin
@@ -48,7 +49,7 @@ public class AuthentificationController {
    
    final String token = jwtTokenUtil.generateToken(c);
    
-   return ResponseEntity.ok(new AuthenticationResponse(token,  ModelViewUtils.CollaborateurToCollaborateurView(c)));
+   return ResponseEntity.ok(new AuthenticationResponse(token,  collaborateur2CollaborateurView.apply(c)));
    
   }
 	

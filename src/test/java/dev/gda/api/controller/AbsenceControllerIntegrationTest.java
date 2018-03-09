@@ -1,5 +1,7 @@
  package dev.gda.api.controller;
 
+import static dev.gda.api.util.ModelViewUtils.collaborateurView2Collaborateur;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
@@ -26,7 +28,6 @@ import dev.gda.api.entite.RoleType;
 import dev.gda.api.modelview.AbsenceView;
 import dev.gda.api.modelview.AuthenticationResponse;
 import dev.gda.api.repository.CollaborateurRepository;
-import dev.gda.api.util.ModelViewUtils;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -40,14 +41,13 @@ public class AbsenceControllerIntegrationTest {
 	
 	private Collaborateur jean;
 	
-	
 	@Before
 	public void setup() {
 		jean = new Collaborateur();
 	    jean.setMatricule("UUID3");
 	    jean.setEmail("jean@mail.com");
 	    jean.setPassword("$2a$10$Qse7HJSORoF8Q5lmOO/6OOh1IKhLVqV4BnOaz1E1U//2rH4vPyO9q");
-	    jean.getRoles().add(RoleType.ROLE_USER);
+	    jean.setRoles(asList(RoleType.ROLE_USER));
 	    this.collaborateurRepository.save(jean);
 	}
 	
@@ -127,7 +127,7 @@ public class AbsenceControllerIntegrationTest {
 		return response.getBody();	
 	}
 	
-	public Absence AbsenceViewToAbsence(AbsenceView absenceView) {
+	private Absence AbsenceViewToAbsence(AbsenceView absenceView) {
 		Absence absence = new Absence();
 		absence.setId(absenceView.getId());
 		absence.setDateDebut(absenceView.getDateDebut());
@@ -135,7 +135,7 @@ public class AbsenceControllerIntegrationTest {
 		absence.setMotif(absenceView.getMotif());
 		absence.setStatut(absenceView.getStatut());
 		absence.setType(absenceView.getType());
-		absence.setCollaborateur(ModelViewUtils.CollaborateurViewToCollaborateur(absenceView.getCollaborateur()));
+		absence.setCollaborateur(collaborateurView2Collaborateur.apply(absenceView.getCollaborateur()));
 		return absence;
 	}
 	

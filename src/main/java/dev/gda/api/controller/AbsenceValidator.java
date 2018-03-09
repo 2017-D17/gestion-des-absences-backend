@@ -29,7 +29,7 @@ public class AbsenceValidator {
 	    
 	    isMotifNotRequired(absence.getMotif(), absence.getType());
 	    
-	    areDateDebutDateFinValid(absence.getDateDebut(), absence.getDateFin());
+	    areDateDebutAndDateFinValid(absence.getDateDebut(), absence.getDateFin());
 	    
 	    return true;
 	    
@@ -45,7 +45,7 @@ public class AbsenceValidator {
 	   * @return
 	   * @throws AbsenceException
 	   */
-	  private boolean areDateDebutDateFinValid(LocalDate debut, LocalDate fin) throws AbsenceException {
+	  private boolean areDateDebutAndDateFinValid(LocalDate debut, LocalDate fin) throws AbsenceException {
 	    
 	    if(fin.isBefore(debut)) {
 	      throw new AbsenceException("The end date is before the begin date");

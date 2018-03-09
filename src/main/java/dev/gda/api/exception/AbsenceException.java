@@ -1,6 +1,6 @@
 package dev.gda.api.exception;
 
-public class AbsenceException extends Exception {
+public class AbsenceException extends RuntimeException {
 
   private static final long serialVersionUID = 7600026050146219291L;
 

@@ -1,5 +1,6 @@
 package dev.gda.api.controller;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
@@ -46,7 +47,7 @@ public class JourFerieControllerIntegrationTest {
 	    jean.setMatricule("UUID3");
 	    jean.setEmail("jean@mail.com");
 	    jean.setPassword("$2a$10$Qse7HJSORoF8Q5lmOO/6OOh1IKhLVqV4BnOaz1E1U//2rH4vPyO9q");
-	    jean.getRoles().add(RoleType.ROLE_ADMIN);
+	    jean.setRoles(asList(RoleType.ROLE_ADMIN));
 	    collaborateurRepository.save(jean);	    
 	}
 	

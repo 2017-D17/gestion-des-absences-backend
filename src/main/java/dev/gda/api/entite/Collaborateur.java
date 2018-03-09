@@ -1,5 +1,7 @@
 package dev.gda.api.entite;
 
+import static java.util.Collections.unmodifiableList;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +12,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+
+import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -203,16 +207,17 @@ public class Collaborateur {
 	}
 
 	/**
-	 * @return the role
+	 * @return the roles
 	 */
 	public List<RoleType> getRoles() {
-		return roles;
+		return unmodifiableList(roles);
 	}
 
 	/**
-	 * @param role the role to set
+	 * @param role the roles to set
 	 */
 	public void setRoles(List<RoleType> roles) {
+		Assert.notEmpty(roles, "A collab must contain at least one role");
 		this.roles = roles;
 	}
 	
@@ -220,14 +225,18 @@ public class Collaborateur {
 	 * @return the subalternes
 	 */
 	public List<Collaborateur> getSubalternes() {
-		return subalternes;
+		return unmodifiableList(subalternes);
 	}
 
 	/**
 	 * @param subalternes the subalternes to set
 	 */
 	public void setSubalternes(List<Collaborateur> subalternes) {
-		this.subalternes = subalternes;
+		if(subalternes != null) {
+			this.subalternes = subalternes;
+		}else {
+			this.subalternes = new ArrayList<>();
+		}
 	}
 
 }

@@ -56,6 +56,7 @@ public class TraitementNuitService{
 	private void traitementAbsenceTypeAutre(Absence absence) {
 		Collaborateur collab = absence.getCollaborateur();
 		int nombreJours = (int) ChronoUnit.DAYS.between(absence.getDateDebut(), absence.getDateFin());
+		nombreJours++;
 		if(absence.getType().equals(AbsenceType.RTT)) {
 			
 			if(collab.getRtt() - nombreJours >= 0 ) {
@@ -72,6 +73,7 @@ public class TraitementNuitService{
 				absence.setStatut(AbsenceStatut.REJETEE);
 			}else {
 
+				this.collaborateurRepository.save(collab);
 				Collaborateur manager = this.collaborateurRepository.findManagerMatricule(absence.getCollaborateur().getMatricule())
 											.map(collaborateurRepository::findOne).get();
 				

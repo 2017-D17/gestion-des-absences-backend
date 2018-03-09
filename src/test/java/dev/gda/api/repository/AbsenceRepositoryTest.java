@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -17,6 +19,7 @@ import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.entite.Collaborateur;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace=Replace.NONE)
 @RunWith(SpringRunner.class)
 public class AbsenceRepositoryTest {
 

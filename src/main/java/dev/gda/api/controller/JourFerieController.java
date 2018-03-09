@@ -59,7 +59,7 @@ public class JourFerieController {
 	}
 
 	/**
-	 * Cette mérhode permet d'ajouter un jour férié
+	 * Cette méthode permet d'ajouter un jour férié
 	 * 
 	 * @return le jour férié sauvegardé
 	 * @throws JourFerieException
@@ -108,11 +108,6 @@ public class JourFerieController {
 			@RequestBody @Valid JourFerie jourFerie) throws JourFerieException {
 
 		checkIfJourFerieValid(jourFerie);
-		// il est interdit de saisir un jour férié à la même date qu'un autre jour férié
-		List<JourFerie> jfs = this.jourFerieRepository.findByDate(jourFerie.getDate());
-		if (!jfs.isEmpty() && jfs.size() > 1) {
-			throw new JourFerieException("Day off already exist for this date");
-		}
 
 		JourFerie jourFerieToModify = jourFerieId.map(this.jourFerieRepository::findOne)
 				.orElseThrow(() -> new JourFerieNotFoundException("Day off not found"));
@@ -130,7 +125,7 @@ public class JourFerieController {
 	
 	
 	/**
-	 * Cette méthode permet de gérer les jours jours de type Rtt employeur dans le cas d'une modification
+	 * Cette méthode permet de gérer les jours de type Rtt employeur dans le cas d'une modification
 	 *  
 	 * @param jourFerieToModify
 	 * @param jourFerie
@@ -186,6 +181,12 @@ public class JourFerieController {
 					|| jourFerie.getDate().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
 				throw new JourFerieException("Date is invalid for this type");
 			}
+		}
+		
+		// il est interdit de saisir un jour férié à la même date qu'un autre jour férié
+		List<JourFerie> jfs = this.jourFerieRepository.findByDate(jourFerie.getDate());
+		if (!jfs.isEmpty() && jfs.size() > 1) {
+			throw new JourFerieException("Day off already exist for this date");
 		}
 
 	}

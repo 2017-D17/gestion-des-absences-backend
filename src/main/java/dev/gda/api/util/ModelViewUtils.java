@@ -1,6 +1,7 @@
 package dev.gda.api.util;
 
 import java.util.Arrays;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import dev.gda.api.entite.Absence;
@@ -12,39 +13,32 @@ import dev.gda.api.modelview.CollaborateurView;
 public class ModelViewUtils {
 
 	/**
-	 * Cette méthode permet de mapper le model CollaborateurView en une entité Collaborateur
-	 *  
-	 * @param collaborateurView le model à mapper
-	 * @return
+	 * Permet de mapper le model CollaborateurView en une entité Collaborateur
 	 */
-	public static Collaborateur CollaborateurViewToCollaborateur(CollaborateurView collaborateurView) {
+	public static Function<CollaborateurView, Collaborateur> collaborateurView2Collaborateur = view -> {
 		Collaborateur collaborateur = new Collaborateur();
-		collaborateur.setMatricule(collaborateurView.getMatricule());
-		collaborateur.setNom(collaborateurView.getNom());
-		collaborateur.setPrenom(collaborateurView.getPrenom());
-		collaborateur.setEmail(collaborateurView.getEmail());
-		collaborateur.setPassword(collaborateurView.getPassword());
-		collaborateur.setDepartement(collaborateurView.getDepartement());
+		collaborateur.setMatricule(view.getMatricule());
+		collaborateur.setNom(view.getNom());
+		collaborateur.setPrenom(view.getPrenom());
+		collaborateur.setEmail(view.getEmail());
+		collaborateur.setPassword(view.getPassword());
+		collaborateur.setDepartement(view.getDepartement());
 		collaborateur.setActif(Boolean.TRUE);
 		
-		if(collaborateurView.getSubalternes().isEmpty()) {
+		if(view.getSubalternes().isEmpty()) {
 			collaborateur.setRoles(Arrays.asList(RoleType.ROLE_USER));
 		}else {
 			collaborateur.setRoles(Arrays.asList(RoleType.ROLE_USER,RoleType.ROLE_MANAGER));
 		}
 		
 		return collaborateur;
-	}
+	};
 	
 	/**
-	 * Cette méthode permet de mapper une entité Collaborateur en un model CollaborateurView
-	 *  
-	 * @param collaborateur le collaborateur à mapper
-	 * @return
+	 * Permet de mapper une entité Collaborateur en un model CollaborateurView  
 	 */
-	public static CollaborateurView CollaborateurToCollaborateurView(Collaborateur collaborateur) {
+	public static Function<Collaborateur, CollaborateurView>  collaborateur2CollaborateurView = collaborateur -> {
 		CollaborateurView view = new CollaborateurView();
-		
 
 		view.setMatricule(collaborateur.getMatricule());
 		view.setNom(collaborateur.getNom());
@@ -64,14 +58,12 @@ public class ModelViewUtils {
 		}
 		
 		return view;
-	}
+	};
 	
 	/**
-	 * Cette méthode permet de mapper une entité Absence en un model AbsenceView
-	 * @param absence l'absence à mapper
-	 * @return 
+	 * Permet de mapper une entité Absence en un model AbsenceView
 	 */
-	public static AbsenceView AbsenceToAbsenceView(Absence absence) {
+	public static Function<Absence, AbsenceView> absence2AbsenceView = absence -> {
 		AbsenceView view = new AbsenceView();
 		view.setId(absence.getId());
 		view.setDateDebut(absence.getDateDebut());
@@ -79,8 +71,9 @@ public class ModelViewUtils {
 		view.setMotif(absence.getMotif());
 		view.setStatut(absence.getStatut());
 		view.setType(absence.getType());
-		view.setCollaborateur(CollaborateurToCollaborateurView(absence.getCollaborateur()));
+		view.setCollaborateur(collaborateur2CollaborateurView.apply(absence.getCollaborateur()));
 		return view;
-	}
+	};
+	
 	
 }

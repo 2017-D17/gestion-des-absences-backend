@@ -8,14 +8,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import dev.gda.api.entite.Absence;
 import dev.gda.api.entite.AbsenceType;
 import dev.gda.api.exception.AbsenceException;
 
-@SpringBootTest
+@Import(value = { AbsenceValidator.class })
 @RunWith(SpringRunner.class)
 public class AbsenceValidatorTest {
 
